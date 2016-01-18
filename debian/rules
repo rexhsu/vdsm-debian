@@ -7,7 +7,7 @@
 # This special exception was added by Craig Small in version 0.37 of dh-make.
 
 # Uncomment this to turn on verbose mode.
-#export DH_VERBOSE=1
+export DH_VERBOSE=1
 
 override_dh_auto_configure:
 	autoreconf -ivf
@@ -27,14 +27,14 @@ override_dh_auto_configure:
 		FUSER_PATH=/bin/fuser \
 		HWCLOCK_PATH=/sbin/hwclock \
 		ISCSIADM_PATH=/usr/bin/iscsiadm \
+		MKISOFS_PATH=/usr/bin/genisoimage \
 		NICE_PATH=/usr/bin/nice \
 		NTPQ_PATH=/usr/bin/ntpq \
 		REBOOT_PATH=/sbin/reboot \
-		SERVICE_PATH=/usr/sbin/service
-
-override_dh_auto_build:
-		sed -i -e 's/@SSL_IMPLEMENTATION@/ssl/g' lib/vdsm/config.py
-		dh_auto_build
+		SERVICE_PATH=/usr/sbin/service \
+		PYFLAKES=true \
+		PEP8=true \
+		NOSE_EXCLUDE=.*
 
 destdir = debian/tmp
 
@@ -45,12 +45,6 @@ override_dh_auto_install:
 		$(destdir)/lib/udev/rules.d/61-vdsm-lvm.rules
 	install -Dm 0644 vdsm/limits.conf \
 		$(destdir)/etc/security/limits.d/99-vdsm.conf
-	install -Dm 0644 init/upstart/vdsmd.upstart \
-		$(destdir)/etc/init/vdsmd.conf
-	install -Dm 0644 init/upstart/supervdsmd.upstart \
-		$(destdir)/etc/init/supervdsmd.conf
-	install -Dm 0644 init/upstart/vdsm-tmpfiles.upstart \
-		$(destdir)/etc/init/vdsm-tmpfiles.conf
 	install -Dm 0644 init/systemd/vdsm-tmpfiles.d.conf $(destdir)/etc/vdsm/vdsm-tmpfiles.conf
 	# This is not commonplace, but we want /var/log/core to be a world-writable
 	# dropbox for core dumps
@@ -64,3 +58,5 @@ override_dh_auto_install:
 
 %:
 	dh $@ --with python2
+
+override_dh_auto_test:

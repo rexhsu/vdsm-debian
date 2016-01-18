@@ -9,6 +9,8 @@ rhev
 rhev/data-center
 rhev/data-center/hsm-tasks
 rhev/data-center/mnt
+usr/libexec/vdsm
+usr/libexec/vdsm/hooks
 usr/libexec/vdsm/hooks/after_device_create
 usr/libexec/vdsm/hooks/after_device_destroy
 usr/libexec/vdsm/hooks/after_device_migrate_destination
@@ -21,7 +23,6 @@ usr/libexec/vdsm/hooks/after_get_stats
 usr/libexec/vdsm/hooks/after_get_vm_stats
 usr/libexec/vdsm/hooks/after_hostdev_list_by_caps
 usr/libexec/vdsm/hooks/after_network_setup
-usr/libexec/vdsm/hooks/after_network_setup_fail
 usr/libexec/vdsm/hooks/after_nic_hotplug
 usr/libexec/vdsm/hooks/after_nic_hotplug_fail
 usr/libexec/vdsm/hooks/after_nic_hotunplug
@@ -40,7 +41,6 @@ usr/libexec/vdsm/hooks/after_vm_migrate_source
 usr/libexec/vdsm/hooks/after_vm_pause
 usr/libexec/vdsm/hooks/after_vm_set_ticket
 usr/libexec/vdsm/hooks/after_vm_start
-usr/libexec/vdsm/hooks/after_ifcfg_write
 usr/libexec/vdsm/hooks/before_device_create
 usr/libexec/vdsm/hooks/before_device_destroy
 usr/libexec/vdsm/hooks/before_device_migrate_destination
@@ -67,11 +67,23 @@ usr/libexec/vdsm/hooks/before_vm_migrate_source
 usr/libexec/vdsm/hooks/before_vm_pause
 usr/libexec/vdsm/hooks/before_vm_set_ticket
 usr/libexec/vdsm/hooks/before_vm_start
-usr/libexec/vdsm/hooks/before_ifcfg_write
+usr/share/vdsm
+usr/share/vdsm/gluster
+usr/share/vdsm/network
+usr/share/vdsm/network/tc
+usr/share/vdsm/rpc
+usr/share/vdsm/storage
+usr/share/vdsm/storage/imageRepository
+usr/share/vdsm/tests
+usr/share/vdsm/tool
+usr/share/vdsm/vdsm
+usr/share/vdsm/virt
 var/lib/libvirt/qemu/channels
 var/lib/vdsm
 var/lib/vdsm/netconfback
 var/lib/vdsm/persistence
+var/lib/vdsm/upgrade
+var/log/core
 var/log/vdsm
 var/log/vdsm/backup
 var/run/vdsm
@@ -79,4 +91,4 @@ var/run/vdsm/payload
 var/run/vdsm/v2v
 var/run/vdsm/sourceRoutes
 var/run/vdsm/trackedInterfaces
-var/log/core
+usr/share/vdsm/network/configurators

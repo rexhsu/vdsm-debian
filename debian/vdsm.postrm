@@ -21,9 +21,8 @@ set -e
 
 case "$1" in
 	purge|remove|disappear)
-        initctl reload-configuration
-        if initctl status libvirt-bin | grep -q start/running ; then
-            initctl stop libvirt-bin && initctl start libvirt-bin
+        if systemctl status libvirt-bin | grep -q start/running ; then
+            systemctl stop libvirt-bin && systemctl start libvirt-bin
         fi
     ;;
 

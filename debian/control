@@ -1,10 +1,11 @@
 Source: vdsm
 Section: admin
 Priority: extra
-Maintainer: Zheng Sheng, Zhou <zhshzhou@linux.vnet.ibm.com>
+Maintainer: Simone Tiraboschi <stirabos@redhat.com>
 Build-Depends: debhelper (>= 8.0.0),
  autoconf,
  automake,
+ dosfstools,
  gcc,
  genisoimage,
  gettext,
@@ -12,6 +13,7 @@ Build-Depends: debhelper (>= 8.0.0),
  libgettextpo-dev,
  libtool,
  openssl,
+ mom (>= 0.4.2),
  pep8,
  psmisc (>= 22.6),
  pyflakes,
@@ -20,14 +22,16 @@ Build-Depends: debhelper (>= 8.0.0),
  python-cpopen (>= 1.3),
  python-dmidecode,
  python-libvirt (>= 1.2.9),
- python-m2crypto,
  python-netaddr,
  python-nose,
+ python-pyinotify,
  python-pthreading (>=0.1.2),
  python-rpm,
  python-selinux,
- sudo (>= 1.7.3)
- python-simplejson (>= 2.0.9)
+ python-six,
+ sudo (>= 1.7.3),
+ python-simplejson (>= 2.0.9),
+ python-ioprocess (>= 0.14)
 Standards-Version: 3.9.4
 Homepage: http://www.ovirt.org/wiki/Vdsm
 Vcs-Git: git://gerrit.ovirt.org/vdsm
@@ -44,20 +48,6 @@ Architecture: all
 Depends: ${shlibs:Depends}, ${misc:Depends}, ${python:Depends}, python (>=2.7.3)
 Description: VDSM python libraries
  Shared libraries between the various VDSM packages.
-
-Package: vdsm-python-zombiereaper
-Architecture: all
-Depends: ${shlibs:Depends}, ${misc:Depends}, ${python:Depends}, python (>=2.7.3)
-Description: zombiereaper for Python
- Collects zombie processes automatically so you don't have to
-
-Package: vdsm-client
-Architecture: all
-Depends: ${shlibs:Depends}, ${misc:Depends},
- python (>=2.7.3),
- vdsm-python (= ${source:Version})
-Description: VDSM command line interface
- Call VDSM commands from the command line. Used for testing and debugging.
 
 Package: vdsm
 Architecture: any
@@ -79,14 +69,14 @@ Depends: ${shlibs:Depends}, ${misc:Depends},
  iproute,
  libguestfs-tools,
  libnl-utils,
- libsanlock-client1 (>= 2.4),
- libsanlock-dev (>= 2.4),
+ libsanlock-client1 (>= 2.8),
+ libsanlock-dev (>= 2.8),
  libvirt-bin (>= 1.2.9),
  libvirt0 (>= 1.2.9),
- linux-image-generic (>= 3.6),
  logrotate,
  lvm2 (>= 2.02.95),
  multipath-tools (>= 0.4.9),
+ mom (>= 0.4.2),
  nfs-client,
  nfs-server,
  ntp,
@@ -96,6 +86,7 @@ Depends: ${shlibs:Depends}, ${misc:Depends},
  psmisc (>= 22.6),
  python (>= 2.7.3),
  python-cpopen (>= 1.3),
+ python-ioprocess (>= 0.14),
  python-dmidecode,
  python-libvirt (>= 1.2.9),
  python-m2crypto,
@@ -112,31 +103,22 @@ Depends: ${shlibs:Depends}, ${misc:Depends},
  sanlock-python (>= 2.4),
  sasl2-bin,
  sed (>= 4.2.1),
- selinux-policy-default (>= 2.20110726),
  sosreport,
  sudo (>= 1.7.3),
  tree,
- vdsm-python (= ${source:Version}),
  xz-utils,
- vdsm-python-zombiereaper (= ${source:Version}),
- vdsm-yajsonrpc (= ${source:Version})
+ vdsm-yajsonrpc (= ${binary:Version}),
+ vdsm-infra (= ${binary:Version}),
+ vdsm-jsonrpc (= ${binary:Version}),
+ vdsm-python (= ${binary:Version}),
+ vdsm-xmlrpc (= ${binary:Version}),
+
 Conflicts: apparmor, vdsm-hook-sriov
 Description: VDSM: Virtual Desktop Server Manager
  The VDSM service is required by a Virtualization Manager to manage the
  Linux hosts. VDSM manages and monitors the host's storage, memory and
  networks as well as virtual machine creation, other host administration
  tasks, statistics gathering, and log collection.
-
-Package: vdsm-gluster
-Architecture: all
-Depends: ${shlibs:Depends}, ${misc:Depends}, ${python:Depends},
- glusterfs-common (>= 3.4.1),
- glusterfs-server,
- python (>=2.7.3),
- python-magic,
- vdsm (>= ${source:Version})
-Description: Gluster Plugin for VDSM
- Gluster plugin enables VDSM to serve Gluster functionalities.
 
 Package: vdsm-tests
 Architecture: all
@@ -171,6 +153,13 @@ Description: Fake qemu process for VDSM quality assurance
  running real guests.
  To enable this hook on your host, set vars.fake_kvm_support=True in your
  /etc/vdsm/vdsm.conf before adding the host to ovirt-Engine.
+
+Package: vdsm-hook-directlun
+Architecture: all
+Depends: ${shlibs:Depends}, ${misc:Depends}, python (>=2.7.3), vdsm (>= ${source:Version})
+Description: Direct LUN support for VDSM
+ VDSM hook enable user to add storage LUN for VDSM
+ without the sharing and storage handling of VDSM.
 
 Package: vdsm-hook-macspoof
 Architecture: all
@@ -322,3 +311,54 @@ Architecture: all
 Depends: ${shlibs:Depends}, ${misc:Depends}, python (>=2.7.3), vdsm (>= ${source:Version})
 Description: External disk support for VDSM
  Hook adds additional disk image for a VM (raw or qcow2)
+
+Package: vdsm-cli
+Architecture: all
+Depends: ${shlibs:Depends}, ${misc:Depends}, python (>=2.7.3), vdsm-python (>= ${source:Version}), vdsm-xmlrpc (>= ${source:Version})
+Description: VDSM command line interface
+ Call VDSM commands from the command line. Used for testing and debugging.
+
+Package: vdsm-debug-plugin
+Architecture: all
+Depends: ${shlibs:Depends}, ${misc:Depends}, python (>=2.7.3), vdsm (>= ${source:Version}), vdsm-xmlrpc (>= ${source:Version})
+Description: VDSM Debug Plugin
+ Used by the trained monkeys at Red Hat to insert chaos and mayhem in to VDSM.
+
+Package: vdsm-hook-allocate-net
+Architecture: all
+Depends: ${shlibs:Depends}, ${misc:Depends}, python (>=2.7.3), vdsm (>= ${source:Version})
+Description: random_network allocation hook for VDSM
+ VDSM hook used to allocate networks for vms in a random fashion
+
+Package: vdsm-hook-macbind
+Architecture: all
+Depends: ${shlibs:Depends}, ${misc:Depends}, python (>=2.7.3), vdsm (>= ${source:Version})
+Description: Bind a vNIC to a Bridge
+ VDSM hooks which allow to bind a vNIC to a Bridge, managed or not by engine.
+
+Package: vdsm-hook-spiceoptions
+Architecture: all
+Depends: ${shlibs:Depends}, ${misc:Depends}, python (>=2.7.3), vdsm (>= ${source:Version})
+Description: To configure spice options for vm
+ This vdsm hook can be used to configure some of
+ the spice optimization attributes and values.
+
+Package: vdsm-infra
+Architecture: all
+Depends: ${shlibs:Depends}, ${misc:Depends}, python (>=2.7.3)
+Description: Utilities and libraries for vdsm
+ Utilities and libraries for vdsm.
+
+Package: vdsm-jsonrpc
+Architecture: all
+Depends: ${shlibs:Depends}, ${misc:Depends}, python (>=2.7.3), vdsm-python (>= ${source:Version}), vdsm-yajsonrpc (>= ${source:Version}), python-ordereddict, python-simplejson (>= 2.0.9)
+Description: VDSM API Server
+ A Json-based RPC interface that serves as the protocol for libvdsm.
+
+Package: vdsm-xmlrpc
+Architecture: all
+Depends: ${shlibs:Depends}, ${misc:Depends}, python (>=2.7.3), vdsm-python (>= ${source:Version})
+Description: VDSM xmlrpc API
+ An XMLRPC interface for interacting with vdsmd. Primary control interface for
+ ovirt-engine and vdsClient.
+
