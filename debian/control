@@ -1,7 +1,7 @@
 Source: vdsm
 Section: admin
 Priority: extra
-Maintainer: Simone Tiraboschi <stirabos@redhat.com>
+Maintainer: Milan Zamazal <mzamazal@redhat.com>
 Build-Depends: debhelper (>= 8.0.0),
  autoconf,
  automake,
