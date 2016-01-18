@@ -1,0 +1,386 @@
+# VDSM Sample Configuration
+
+[vars]
+
+# Enable core dump.
+# core_dump_enable = true
+
+# Reserves memory for the host to prevent VMs from using all the
+# physical pages. The values are in Mbytes.
+# host_mem_reserve = 256
+
+# guest_ram_overhead = 65
+
+# Memory reserved for non-vds-administered programs.
+# extra_mem_reserve = 65
+
+# Comma-separated list of fnmatch-patterns for dummy hosts nics to be
+# shown to vdsm.
+# fake_nics = dummy_*,veth_*
+
+# Whether to use "ifcfg", "pyroute2" or "iproute2" to configure
+# networks. pyroute2 and iproute2 configurators are not ready yet for
+# general usage.
+# net_configurator = ifcfg
+
+# Whether to use "ifcfg" or "unified" persistence for networks.
+# net_persistence = unified
+
+# Whether to set HWADDR in ifcfg files. Set to "never" if
+# NetworkManager is disabled and device name persistence does not
+# depend on HWADDR.
+# hwaddr_in_ifcfg = always
+
+# Which special ethtool options should be applied to NICs after they
+# are taken up, e.g. "lro off" on buggy devices. To apply options to a
+# single interface, set ethtool_opts.iface_name.
+# ethtool_opts =
+
+# NIC model is rtl8139, ne2k_pci pv or any other valid device
+# recognized by kvm/qemu if a coma separated list given then a NIC per
+# device will be created.
+# nic_model = rtl8139,pv
+
+# Maximum time the destination waits for the migration to finish.
+# migration_destination_timeout = 21600
+
+# Maximum time the source host waits during a migration in case that
+# there is no progress. If the time has passed, the migration will be
+# aborted.
+# migration_progress_timeout = 150
+
+# The maximum time in seconds per GiB memory a migration may take
+# before the migration will be aborted by the source host. Setting
+# this value to 0 will disable this feature.
+# migration_max_time_per_gib_mem = 64
+
+# Time to wait (in seconds) for migration destination to start
+# listening before migration begins.
+# migration_listener_timeout = 30
+
+# Maximum bandwidth for migration, in MiBps, 0 means libvirt's
+# default, since 0.10.x default in libvirt is unlimited
+# migration_max_bandwidth = 32
+
+# How often (in seconds) should the monitor thread pulse, 0 means the
+# thread is disabled.
+# migration_monitor_interval = 10
+
+# Comma-separated list of fnmatch-patterns for host nics to be hidden
+# from vdsm.
+# hidden_nics = w*,usb*
+
+# Comma-separated list of fnmatch-patterns for host bonds to be hidden
+# from vdsm.
+# hidden_bonds =
+
+# Comma-separated list of fnmatch-patterns for host vlans to be hidden
+# from vdsm. vlan names must be in the format "dev.VLANID" (e.g.
+# eth0.100, em1.20, eth2.200). vlans with alternative names must be
+# hidden from vdsm (e.g. eth0.10-fcoe, em1.myvlan100, vlan200)
+# hidden_vlans =
+
+# default_bridge = engine
+
+# Maxmium allowed downtime for live migration in milliseconds
+# (anything below 100ms is ignored) if you do not care about liveness
+# of migration, set to a very high value, such as 600000.
+# migration_downtime = 500
+
+# This value is used on the source host to define the delay before
+# setting/increasing the downtime of a migration. The value is per GiB
+# of RAM. A minimum of twice this value is used for VMs with less than
+# 2 GiB of RAM
+# migration_downtime_delay = 75
+
+# Incremental steps used to reach migration_downtime.
+# migration_downtime_steps = 10
+
+# Maximum concurrent outgoing migrations
+# max_outgoing_migrations = 3
+
+# Destroy and shutdown timeouts (in sec) before completing the action.
+# sys_shutdown_timeout = 120
+
+# Grace period (seconds) to let guest user close his applications
+# before shutdown.
+# user_shutdown_timeout = 30
+
+# Time (in sec) to wait for guest agent.
+# guest_agent_timeout = 30
+
+# Time to wait (in seconds) for vm to respond to a monitor command, 30
+# secs is a nice default. Set to 300 if the vm is expected to freeze
+# during cluster failover.
+# vm_command_timeout = 60
+
+# Time to wait (in seconds) for a VM to detach its disk
+# hotunplug_timeout = 30
+
+# Time to wait (in seconds) between consecutive checks for
+# deviceremoval
+# hotunplug_check_interval = 1
+
+# How often should we check drive watermark on block storage for
+# automatic extension of thin provisioned volumes (seconds).
+# vm_watermark_interval = 2
+
+# vm_sample_interval = 15
+
+# vm_sample_jobs_interval = 15
+
+# How often should we sample NUMA CPU assignments
+# vm_sample_numa_interval = 15
+
+# host_sample_stats_interval = 15
+
+# Where the certificates and keys are situated.
+# trust_store_path = /etc/pki/vdsm
+
+# Whether to use ssl encryption and authentication.
+# ssl = true
+
+# vds_responsiveness_timeout = 60
+
+# vdsm_nice = -5
+
+# qemu_drive_cache = none
+
+# fake_kvm_support = false
+
+# Choose the target architecture of the fake KVM mode
+# fake_kvm_architecture = x86_64
+
+# Set memory of fake KVM hosts. Set to '0' to use supplied memory
+# value
+# fake_kvm_memory = 0
+
+# Enable reporting of fake VM stats.
+# fake_vmstats_enable = false
+
+# Enable the xmlrpc server
+# xmlrpc_enable = true
+
+# Enable HTTP/1.1 keep-alive connections
+# xmlrpc_http11 = true
+
+# Enable the JSON RPC server
+# jsonrpc_enable = true
+
+# Enable outgoing connection to broker
+# broker_enable = false
+
+# Count each cpu hyperthread as an individual core
+# report_host_threads_as_cores = false
+
+# Specify the log filters to track libvirt calls
+# libvirt_env_variable_log_filters =
+
+# Specify the output to track libvirt calls
+# libvirt_env_variable_log_outputs =
+
+# Local path to the transient disks repository.
+# transient_disks_repository = /var/lib/vdsm/transient
+
+# SSL protocol used by encrypted connection
+# ssl_protocol = tlsv1
+
+# Time in seconds defining how frequently we log transport stats
+# connection_stats_timeout = 3600
+
+# Use the special string value "auto" (default value) to make Vdsm
+# pick the first online core, starting with the second logical core.
+# If only the first logical core is online, Vdsm will use it. To
+# explicitely select the CPU cores on which VDSM is allowed to run,
+# use a comma separated list of CPU cores, expressed as integers
+# starting from zero. To disable the affinity, allowing Vdsm to run on
+# all the online cores, use the empty value. Valid examples: "auto",
+# "1", "0,1", ""
+# cpu_affinity = auto
+
+# Specifies which ssl implementation should be used. There are 2
+# options: "m2c" to use the m2crypto module "ssl" to use the standard
+# python ssl module
+# ssl_implementation = @SSL_IMPLEMENTATION@
+
+[rpc]
+
+# Number of worker threads to serve jsonrpc server.
+# worker_threads = 8
+
+# Max number of tasks which can be queued per workers.
+# tasks_per_worker = 10
+
+[mom]
+
+# mom configuration file
+# conf = /etc/vdsm/mom.conf
+
+# name of the mom policy to be updated from updatePolicyParameters API
+# call
+# tuning_policy = 01-parameters
+
+[irs]
+
+# irs_enable = true
+
+# Image repository.
+# repository = /rhev/data-center
+
+# hsm_tasks = %(repository)s/hsm-tasks
+
+# images = /images
+
+# irsd = %(images)s/irsd
+
+# Together with volume_utilization_chunk_mb, set the minimal free
+# space before a thin provisioned block volume is extended. Use lower
+# values to extend earlier.
+# volume_utilization_percent = 50
+
+# Size of extension chunk in megabytes, and together with
+# volume_utilization_percent, set the free space limit. Use higher
+# values to extend in bigger chunks.
+# volume_utilization_chunk_mb = 1024
+
+# How often should the volume size be checked (seconds).
+# vol_size_sample_interval = 60
+
+# The maximal number of seconds to wait for scsi scan to return.
+# scsi_rescan_maximal_timeout = 30
+
+# Maximum number of seconds to wait until udev events are handled
+# after modifying scsi interconnects.
+# scsi_settle_timeout = 5
+
+# Storage domain health check delay, the amount of seconds to wait
+# between two successive run of the domain health check.
+# sd_health_check_delay = 10
+
+# NFS mount options, comma-separated list (NB: no white space
+# allowed!)
+# nfs_mount_options = soft,nosharecache
+
+# vol_extend_policy = ON
+
+# lock_util_path = /usr/libexec/vdsm
+
+# lock_cmd = spmprotect.sh
+
+# free_lock_cmd = spmstop.sh
+
+# The number of threads to allocate to the task manager.
+# thread_pool_size = 10
+
+# max_tasks = 500
+
+# lvm_dev_whitelist =
+
+# md_backup_versions = 30
+
+# md_backup_dir = /var/log/vdsm/backup
+
+# The number of PVs per VG has a hard-coded limit of 10.
+# maximum_allowed_pvs = 8
+
+# repo_stats_cache_refresh_timeout = 300
+
+# task_resource_default_timeout = 120000
+
+# prepare_image_timeout = 600000
+
+# gc_blocker_force_collect_interval = 60
+
+# Process pool configuration.
+# maximum_domains_in_pool = 100
+
+# process_pool_timeout = 60
+
+# TTL of an unused IOProcess instance
+# max_ioprocess_idle_time = 60
+
+# process_pool_max_slots_per_domain = 10
+
+# process_pool_max_queued_slots_per_domain = 10
+
+# Comma seperated ifaces to connect with. i.e. iser,default
+# iscsi_default_ifaces = default
+
+# Whether to use the volume leases or not.
+# use_volume_leases = false
+
+# Whether to use RFH or ioprocess implementation for oop.Values can be
+# either ioprocess or rfh.
+# oop_impl = ioprocess
+
+[addresses]
+
+# Port on which the vdsmd XMPRPC server listens to network clients.
+# management_port = 54321
+
+# Set to "::" to listen on IPv6.
+# management_ip = 0.0.0.0
+
+# guests_gateway_ip =
+
+# Address where the broker is listening at. Use an empty string for
+# none
+# broker_address = 127.0.0.1
+
+# Port where the broker is listening at.
+# broker_port = 5445
+
+# Queues for vdsm to subscribe to
+# request_queues = jms.topic.vdsm_requests,jms.topic.vdsm_irs_requests
+
+# Queue used for events
+# event_queue = jms.queue.events
+
+[sampling]
+
+# Number of worker threads to serve the periodic tasks. This is for
+# internal usage and may change without warning
+# periodic_workers = 4
+
+# Max number of tasks which can be queued on workers. This is for
+# internal usage and may change without warning
+# periodic_task_per_worker = 100
+
+[devel]
+
+# Enable whole process profiling (requires yappi profiler).
+# cpu_profile_enable = false
+
+# Profile file format (pstat, callgrind, ystat)
+# cpu_profile_format = pstat
+
+# Profile builtin functions used by standard Python modules. false by
+# default.
+# cpu_profile_builtins = false
+
+# Sets the underlying clock type (cpu, wall)
+# cpu_profile_clock = cpu
+
+# Display python warnings in the log
+# python_warnings_enable = false
+
+# Enable whole process profiling (requires dowser profiler).
+# memory_profile_enable = false
+
+# Port on which the dowser Web UI will be reachable.
+# memory_profile_port = 9090
+
+# Enable manhole debugging service (requires manhole package).
+# manhole_enable = false
+
+# Enable code coverage (requires python-coverage package). false by
+# default. Use environment file /etc/sysconfig/vdsm to set
+# COVERAGE_PROCESS_START and COVERAGE_FILE variables.
+# coverage_enable = false
+
+[gluster]
+
+# Only replica 1 and 3 are supported. This configuration is for
+# development only. Value is comma delimeted.
+# allowed_replica_counts = 1,3
+
