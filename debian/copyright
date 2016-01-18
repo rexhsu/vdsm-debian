@@ -3,7 +3,7 @@ Upstream-Name: vdsm
 Source: http://gerrit.ovirt.org/gitweb?p=vdsm.git
 
 Files: *
-Copyright: 2012 Red Hat, Inc.
+Copyright: 2012-2016 Red Hat, Inc.
            2013 IBM, Inc.
            2013 Packaged by Zheng Sheng, Zhou <zhshzhou@linux.vnet.ibm.com>
 License: GPL-2+
@@ -25,6 +25,7 @@ License: GPL-2+
 
 Files: debian/*
 Copyright: 2013 Zheng Sheng, Zhou <zhshzhou@linux.vnet.ibm.com>
+           2015-2016 Red Hat, Inc.
 License: GPL-2+
  This package is free software; you can redistribute it and/or modify
  it under the terms of the GNU General Public License as published by
