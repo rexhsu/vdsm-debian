@@ -3,7 +3,7 @@ Section: admin
 Priority: extra
 Maintainer: Milan Zamazal <mzamazal@redhat.com>
 Build-Depends: debhelper (>= 8), python-dev, python-nose
-Standards-Version: 3.9.4
+Standards-Version: 3.9.6
 Homepage: http://www.ovirt.org/wiki/Vdsm
 Vcs-Git: git://gerrit.ovirt.org/vdsm
 Vcs-Browser: http://gerrit.ovirt.org/gitweb?p=vdsm.git
