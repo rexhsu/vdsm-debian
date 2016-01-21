@@ -92,7 +92,7 @@ Description: Vdsm Debug Plugin
 
 Package: vdsm-hooks
 Architecture: all
-Depends: ${shlibs:Depends}, ${misc:Depends}, python (>=2.7.3), vdsm (>= ${source:Version})
+Depends: ${shlibs:Depends}, ${misc:Depends}, python (>=2.7.3), vdsm (>= ${source:Version}), python-libguestfs, usbutils
 Conflicts: vdsm-hook-checkimages, vdsm-hook-ethtool-options, vdsm-hook-vhostmd, vdsm-hook-faqemu, vdsm-hook-directlun, vdsm-hook-macspoof, vdsm-hook-extnet, vdsm-hook-fakevmstats, vdsm-hook-fileinject, vdsm-hook-floppy, vdsm-hook-hostusb, vdsm-hook-hugepages, vdsm-hook-ipv6, vdsm-hook-isolatedprivatevlan, vdsm-hook-nestedvt, vdsm-hook-numa, vdsm-hook-openstacknet, vdsm-hook-pincpu, vdsm-hook-promisc, vdsm-hook-qemucmdline, vdsm-hook-qos, vdsm-hook-scratchpad, vdsm-hook-smbios, vdsm-hook-vmfex, vdsm-hook-vmfex-dev, vdsm-hook-vmdisk, vdsm-hook-allocate-net, vdsm-hook-macbind, vdsm-hook-spiceoptions
 Replaces: vdsm-hook-checkimages, vdsm-hook-ethtool-options, vdsm-hook-vhostmd, vdsm-hook-faqemu, vdsm-hook-directlun, vdsm-hook-macspoof, vdsm-hook-extnet, vdsm-hook-fakevmstats, vdsm-hook-fileinject, vdsm-hook-floppy, vdsm-hook-hostusb, vdsm-hook-hugepages, vdsm-hook-ipv6, vdsm-hook-isolatedprivatevlan, vdsm-hook-nestedvt, vdsm-hook-numa, vdsm-hook-openstacknet, vdsm-hook-pincpu, vdsm-hook-promisc, vdsm-hook-qemucmdline, vdsm-hook-qos, vdsm-hook-scratchpad, vdsm-hook-smbios, vdsm-hook-vmfex, vdsm-hook-vmfex-dev, vdsm-hook-vmdisk, vdsm-hook-allocate-net, vdsm-hook-macbind, vdsm-hook-spiceoptions
 Description: Vdsm addons executed at certain points of a virtual machine life cycle
