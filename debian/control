@@ -123,194 +123,36 @@ Description: VDSM: Virtual Desktop Server Manager
 Package: vdsm-tests
 Architecture: all
 Depends: ${shlibs:Depends}, ${misc:Depends}, python (>=2.7.3), vdsm (>= ${source:Version}), python-nose
-Description: Unit and functional tests for vdsm
- A test suite for verifying the functionality of a running vdsm instance
+Description: Unit and functional tests for VDSM
+ A test suite for verifying the functionality of a running VDSM instance.
 
-Package: vdsm-hook-checkimages
+Package: vdsm-hooks
 Architecture: all
 Depends: ${shlibs:Depends}, ${misc:Depends}, python (>=2.7.3), vdsm (>= ${source:Version})
-Description: Qcow2 disk image format check hook for VDSM
- VDSM hook used to perform consistency check on a qcow2 format disk image
- using the QEMU disk image utility.
-
-Package: vdsm-hook-ethtool-options
-Architecture: all
-Depends: ${shlibs:Depends}, ${misc:Depends}, python (>=2.7.3), vdsm (>= ${source:Version})
-Description: VDSM hook used for applying custom network properties that define
- ethtool options for vdsm network nics
-
-Package: vdsm-hook-vhostmd
-Architecture: all
-Depends: ${shlibs:Depends}, ${misc:Depends}, python (>=2.7.3), vdsm (>= ${source:Version})
-Description: VDSM hook set for interaction with vhostmd
- VDSM hook to use vhostmd per VM according to Virtualization Manager requests.
-
-Package: vdsm-hook-faqemu
-Architecture: all
-Depends: ${shlibs:Depends}, ${misc:Depends}, python (>=2.7.3), vdsm (>= ${source:Version})
-Description: Fake qemu process for VDSM quality assurance
- VDSM hook used for testing VDSM with multiple fake virtual machines without
- running real guests.
- To enable this hook on your host, set vars.fake_kvm_support=True in your
- /etc/vdsm/vdsm.conf before adding the host to ovirt-Engine.
-
-Package: vdsm-hook-directlun
-Architecture: all
-Depends: ${shlibs:Depends}, ${misc:Depends}, python (>=2.7.3), vdsm (>= ${source:Version})
-Description: Direct LUN support for VDSM
- VDSM hook enable user to add storage LUN for VDSM
- without the sharing and storage handling of VDSM.
-
-Package: vdsm-hook-macspoof
-Architecture: all
-Depends: ${shlibs:Depends}, ${misc:Depends}, python (>=2.7.3), vdsm (>= ${source:Version})
-Description: Disables MAC spoofing filtering
- VDSM hooks which allow to disable mac spoof filtering
- either on all the of the VM's interfaces or on
- specific vnics.
-
-Package: vdsm-hook-extnet
-Architecture: all
-Depends: ${shlibs:Depends}, ${misc:Depends}, python (>=2.7.3), vdsm (>= ${source:Version})
-Description: Force a vNIC to connect to a specific libvirt network
- VDSM hook which allows to connect a vNIC to a libvirt network that is managed
- outside of oVirt, such as an openvswitch network.
-
-Package: vdsm-hook-fakevmstats
-Architecture: all
-Depends: ${shlibs:Depends}, ${misc:Depends}, python (>=2.7.3), vdsm (>= ${source:Version})
-Description: Generate random statistics for vms running on the host. The hook
- intercepts statistics returned on getAllVmStats.
- To enable this hook on your host, set vars.fake_vmstats_enable=true in your
- /etc/vdsm/vdsm.conf.
-
-Package: vdsm-hook-fileinject
-Architecture: all
-Depends: ${shlibs:Depends}, ${misc:Depends}, python (>=2.7.3), vdsm (>= ${source:Version}), python-libguestfs
-Description: Allow uploading file to VMs disk
- Hook is getting target file name and its content and
- create that file in target machine.
-
-Package: vdsm-hook-floppy
-Architecture: all
-Depends: ${shlibs:Depends}, ${misc:Depends}, python (>=2.7.3), vdsm (>= ${source:Version})
-Description: Allow adding floppy to VM
- Allow adding floppy to VM
-
-Package: vdsm-hook-hostusb
-Architecture: all
-Depends: ${shlibs:Depends}, ${misc:Depends}, python (>=2.7.3), vdsm (>= ${source:Version}), usbutils
-Description: Allow attaching USB device from host
- Hook is getting vendor and product id of USB device
- disconnect it from host and attach it to VM
-
-Package: vdsm-hook-hugepages
-Architecture: all
-Depends: ${shlibs:Depends}, ${misc:Depends}, python (>=2.7.3), vdsm (>= ${source:Version})
-Description: Huge pages enable user to handle VM with 2048KB page files.
- Hook is getting number of huge pages reserve them for the VM,
- and enable user to handle VM with 2048KB page files.
-
-Package: vdsm-hook-ipv6
-Architecture: all
-Depends: ${shlibs:Depends}, ${misc:Depends}, python (>=2.7.3), vdsm (>= ${source:Version})
-Description: Set IPv6 configuration through custom network properties
- VDSM hook used for applying IPv6 configuration through custom network
- properties
-
-Package: vdsm-hook-isolatedprivatevlan
-Architecture: all
-Depends: ${shlibs:Depends}, ${misc:Depends}, python (>=2.7.3), vdsm (>= ${source:Version})
-Description: Isolated network environment for VMs
- limit VM traffic to a specific gateway by its mac address,
- hook prevent VM from spoofing its mac or  ip address
- by using <filterref filter='clean-traffic'/> libvirt filter
- and by adding custom filter: isolatedprivatevlan-vdsm.xml
-
-Package: vdsm-hook-nestedvt
-Architecture: all
-Depends: ${shlibs:Depends}, ${misc:Depends}, python (>=2.7.3), vdsm (>= ${source:Version})
-Description: Nested Virtualization support for VDSM
- If the nested virtualization is enabled in your kvm module
- this hook will expose it to the guests.
-
-Package: vdsm-hook-numa
-Architecture: all
-Depends: ${shlibs:Depends}, ${misc:Depends}, python (>=2.7.3), vdsm (>= ${source:Version})
-Description: NUMA support for VDSM
- Hooks is getting number/rage of NUMA nodes and NUMA mode,
- and update the VM xml.
-
-Package: vdsm-hook-openstacknet
-Architecture: all
-Depends: ${shlibs:Depends}, ${misc:Depends}, python (>=2.7.3), vdsm (>= ${source:Version})
-Description: OpenStack Network vNICs support for VDSM
- Hook for OpenStack Network vNICs.
-
-Package: vdsm-hook-pincpu
-Architecture: all
-Depends: ${shlibs:Depends}, ${misc:Depends}, python (>=2.7.3), vdsm (>= ${source:Version})
-Description: Hook pin VM so specific CPUs
- pincpu is hook for VDSM.
- pincpu enable to pin virtual machine to a specific CPUs.
-
-Package: vdsm-hook-promisc
-Architecture: all
-Depends: ${shlibs:Depends}, ${misc:Depends}, python (>=2.7.3), vdsm (>= ${source:Version})
-Description: Network interface promiscuous mode support for VDSM
- VDSM promiscuous mode let user define a VM interface that will capture
- all network traffic.
-
-Package: vdsm-hook-qemucmdline
-Architecture: all
-Depends: ${shlibs:Depends}, ${misc:Depends}, python (>=2.7.3), vdsm (>= ${source:Version})
-Description: QEMU cmdline hook for VDSM
- Provides support for injecting QEMU cmdline via VDSM hook.
- It exploits libvirt's qemu:commandline facility available in the
- qemu xml namespace.
-
-Package: vdsm-hook-qos
-Architecture: all
-Depends: ${shlibs:Depends}, ${misc:Depends}, python (>=2.7.3), vdsm (>= ${source:Version})
-Description: QoS network in/out traffic support for VDSM
- Hook adds QoS in/out traffic to VMs interfaces
-
-Package: vdsm-hook-scratchpad
-Architecture: all
-Depends: ${shlibs:Depends}, ${misc:Depends}, python (>=2.7.3), vdsm (>= ${source:Version})
-Description: One time disk creation for VDSM
- scratchpad hook for VDSM
- Hook creates a disk for a VM onetime usage,
- the disk will be erased when the VM destroyed.
- VM cannot be migrated when using scratchpad hook
-
-Package: vdsm-hook-smbios
-Architecture: all
-Depends: ${shlibs:Depends}, ${misc:Depends}, python (>=2.7.3), vdsm (>= ${source:Version})
-Description: Adding custom smbios entries to libvirt domain via VDSM
- Adding custom smbios entries to libvirt domain via VDSM
- such as: vendor, version, date and release
-
-Package: vdsm-hook-vmfex
-Architecture: all
-Depends: ${shlibs:Depends}, ${misc:Depends}, python (>=2.7.3), vdsm (>= ${source:Version})
-Conflicts: vdsm-hook-vmfex-dev
-Description: vmfex support for VDSM
- Hook for vmfex.
-
-Package: vdsm-hook-vmfex-dev
-Architecture: all
-Depends: ${shlibs:Depends}, ${misc:Depends}, python (>=2.7.3), vdsm (>= ${source:Version})
-Conflicts: vdsm-hook-vmfex
-Description: VM-FEX vNIC support for VDSM
- Allows to use custom device properties to pass through a VF using
- VM-FEX SR-IOV with macvtap topology.
-
-Package: vdsm-hook-vmdisk
-Architecture: all
-Depends: ${shlibs:Depends}, ${misc:Depends}, python (>=2.7.3), vdsm (>= ${source:Version})
-Description: External disk support for VDSM
- Hook adds additional disk image for a VM (raw or qcow2)
+Conflicts: vdsm-hook-checkimages, vdsm-hook-ethtool-options, vdsm-hook-vhostmd, vdsm-hook-faqemu, vdsm-hook-directlun, vdsm-hook-macspoof, vdsm-hook-extnet, vdsm-hook-fakevmstats, vdsm-hook-fileinject, vdsm-hook-floppy, vdsm-hook-hostusb, vdsm-hook-hugepages, vdsm-hook-ipv6, vdsm-hook-isolatedprivatevlan, vdsm-hook-nestedvt, vdsm-hook-numa, vdsm-hook-openstacknet, vdsm-hook-pincpu, vdsm-hook-promisc, vdsm-hook-qemucmdline, vdsm-hook-qos, vdsm-hook-scratchpad, vdsm-hook-smbios, vdsm-hook-vmfex, vdsm-hook-vmfex-dev, vdsm-hook-vmdisk, vdsm-hook-allocate-net, vdsm-hook-macbind, vdsm-hook-spiceoptions
+Replaces: vdsm-hook-checkimages, vdsm-hook-ethtool-options, vdsm-hook-vhostmd, vdsm-hook-faqemu, vdsm-hook-directlun, vdsm-hook-macspoof, vdsm-hook-extnet, vdsm-hook-fakevmstats, vdsm-hook-fileinject, vdsm-hook-floppy, vdsm-hook-hostusb, vdsm-hook-hugepages, vdsm-hook-ipv6, vdsm-hook-isolatedprivatevlan, vdsm-hook-nestedvt, vdsm-hook-numa, vdsm-hook-openstacknet, vdsm-hook-pincpu, vdsm-hook-promisc, vdsm-hook-qemucmdline, vdsm-hook-qos, vdsm-hook-scratchpad, vdsm-hook-smbios, vdsm-hook-vmfex, vdsm-hook-vmfex-dev, vdsm-hook-vmdisk, vdsm-hook-allocate-net, vdsm-hook-macbind, vdsm-hook-spiceoptions
+Description: VDSM addons executed at certain points of a virtual machine life cycle
+ The package provides the following VDSM hooks:
+ .
+ directlun - Attach a LUN to a VM
+ faqemu - Fake QEMU emulation (the VM will "think" it has VT extensions enabled)
+ fileinject - Insert a file into the VM
+ floppy - Attach a floppy image to the VM
+ hostusb - Attach a hosts' USB device to the VM
+ hugepages - Enable hugepages for the VM
+ isolatedprivatevlan - Connect VM to an isolated private VLAN instead of a shared network
+ numa - Pin a VM to a NUMA node(s)
+ pincpu - Pin a VM to a set of CPU cores
+ promisc - Start VM on a promiscous mode enabled network
+ qemucmdline - Run an arbitrary QEMU command line
+ qos - Set a specific network QoS for a VM
+ scratchpad - Start the VM with a disposable disk image, that will be removed when the VM is stopped
+ smartcard - Enable SPICE smartcard support for a VM
+ smbios - Alter a VMs smbios domain entry
+ sriov - Attach an SRIOV device to a VM
+ vhostmd - Enable vhostmd for a VM
+ vmdisk - Add an additional VM disk image
+ vmfex - Attach a Cisco VM-FEX device to a VM
 
 Package: vdsm-cli
 Architecture: all
@@ -322,26 +164,7 @@ Package: vdsm-debug-plugin
 Architecture: all
 Depends: ${shlibs:Depends}, ${misc:Depends}, python (>=2.7.3), vdsm (>= ${source:Version}), vdsm-xmlrpc (>= ${source:Version})
 Description: VDSM Debug Plugin
- Used by the trained monkeys at Red Hat to insert chaos and mayhem in to VDSM.
-
-Package: vdsm-hook-allocate-net
-Architecture: all
-Depends: ${shlibs:Depends}, ${misc:Depends}, python (>=2.7.3), vdsm (>= ${source:Version})
-Description: random_network allocation hook for VDSM
- VDSM hook used to allocate networks for vms in a random fashion
-
-Package: vdsm-hook-macbind
-Architecture: all
-Depends: ${shlibs:Depends}, ${misc:Depends}, python (>=2.7.3), vdsm (>= ${source:Version})
-Description: Bind a vNIC to a Bridge
- VDSM hooks which allow to bind a vNIC to a Bridge, managed or not by engine.
-
-Package: vdsm-hook-spiceoptions
-Architecture: all
-Depends: ${shlibs:Depends}, ${misc:Depends}, python (>=2.7.3), vdsm (>= ${source:Version})
-Description: To configure spice options for vm
- This vdsm hook can be used to configure some of
- the spice optimization attributes and values.
+ Used by the trained monkeys at Red Hat to insert chaos and mayhem into VDSM.
 
 Package: vdsm-infra
 Architecture: all
