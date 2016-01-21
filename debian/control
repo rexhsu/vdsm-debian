@@ -8,18 +8,6 @@ Homepage: http://www.ovirt.org/wiki/Vdsm
 Vcs-Git: git://gerrit.ovirt.org/vdsm
 Vcs-Browser: http://gerrit.ovirt.org/gitweb?p=vdsm.git
 
-Package: vdsm-yajsonrpc
-Architecture: all
-Depends: ${shlibs:Depends}, ${misc:Depends}, python (>=2.7.3), python-simplejson (>= 2.0.9)
-Description: JSON RPC server and client implementation
- A JSON RPC server and client implementation.
-
-Package: vdsm-python
-Architecture: all
-Depends: ${shlibs:Depends}, ${misc:Depends}, ${python:Depends}, python (>=2.7.3)
-Description: VDSM python libraries
- Shared libraries between the various VDSM packages.
-
 Package: vdsm
 Architecture: any
 Depends: ${shlibs:Depends}, ${misc:Depends},
@@ -83,27 +71,32 @@ Depends: ${shlibs:Depends}, ${misc:Depends},
  vdsm-jsonrpc (= ${binary:Version}),
  vdsm-python (= ${binary:Version}),
  vdsm-xmlrpc (= ${binary:Version}),
-
 Conflicts: apparmor, vdsm-hook-sriov
-Description: VDSM: Virtual Desktop Server Manager
- The VDSM service is required by a Virtualization Manager to manage the
- Linux hosts. VDSM manages and monitors the host's storage, memory and
+Description: Virtual Desktop Server Manager
+ The Vdsm service is required by oVirt Open Virtualization Manager to manage
+ the Linux hosts. Vdsm manages and monitors the host's storage, memory and
  networks as well as virtual machine creation, other host administration
  tasks, statistics gathering, and log collection.
 
-Package: vdsm-tests
+Package: vdsm-cli
 Architecture: all
-Depends: ${shlibs:Depends}, ${misc:Depends}, python (>=2.7.3), vdsm (>= ${source:Version}), python-nose
-Description: Unit and functional tests for VDSM
- A test suite for verifying the functionality of a running VDSM instance.
+Depends: ${shlibs:Depends}, ${misc:Depends}, python (>=2.7.3), vdsm-python (>= ${source:Version}), vdsm-xmlrpc (>= ${source:Version})
+Description: Vdsm command line interface
+ Call Vdsm commands from the command line. Used for testing and debugging.
+
+Package: vdsm-debug-plugin
+Architecture: all
+Depends: ${shlibs:Depends}, ${misc:Depends}, python (>=2.7.3), vdsm (>= ${source:Version}), vdsm-xmlrpc (>= ${source:Version})
+Description: Vdsm Debug Plugin
+ Used by the trained monkeys at Red Hat to insert chaos and mayhem into Vdsm.
 
 Package: vdsm-hooks
 Architecture: all
 Depends: ${shlibs:Depends}, ${misc:Depends}, python (>=2.7.3), vdsm (>= ${source:Version})
 Conflicts: vdsm-hook-checkimages, vdsm-hook-ethtool-options, vdsm-hook-vhostmd, vdsm-hook-faqemu, vdsm-hook-directlun, vdsm-hook-macspoof, vdsm-hook-extnet, vdsm-hook-fakevmstats, vdsm-hook-fileinject, vdsm-hook-floppy, vdsm-hook-hostusb, vdsm-hook-hugepages, vdsm-hook-ipv6, vdsm-hook-isolatedprivatevlan, vdsm-hook-nestedvt, vdsm-hook-numa, vdsm-hook-openstacknet, vdsm-hook-pincpu, vdsm-hook-promisc, vdsm-hook-qemucmdline, vdsm-hook-qos, vdsm-hook-scratchpad, vdsm-hook-smbios, vdsm-hook-vmfex, vdsm-hook-vmfex-dev, vdsm-hook-vmdisk, vdsm-hook-allocate-net, vdsm-hook-macbind, vdsm-hook-spiceoptions
 Replaces: vdsm-hook-checkimages, vdsm-hook-ethtool-options, vdsm-hook-vhostmd, vdsm-hook-faqemu, vdsm-hook-directlun, vdsm-hook-macspoof, vdsm-hook-extnet, vdsm-hook-fakevmstats, vdsm-hook-fileinject, vdsm-hook-floppy, vdsm-hook-hostusb, vdsm-hook-hugepages, vdsm-hook-ipv6, vdsm-hook-isolatedprivatevlan, vdsm-hook-nestedvt, vdsm-hook-numa, vdsm-hook-openstacknet, vdsm-hook-pincpu, vdsm-hook-promisc, vdsm-hook-qemucmdline, vdsm-hook-qos, vdsm-hook-scratchpad, vdsm-hook-smbios, vdsm-hook-vmfex, vdsm-hook-vmfex-dev, vdsm-hook-vmdisk, vdsm-hook-allocate-net, vdsm-hook-macbind, vdsm-hook-spiceoptions
-Description: VDSM addons executed at certain points of a virtual machine life cycle
- The package provides the following VDSM hooks:
+Description: Vdsm addons executed at certain points of a virtual machine life cycle
+ The package provides the following Vdsm hooks:
  .
  directlun - Attach a LUN to a VM
  faqemu - Fake QEMU emulation (the VM will "think" it has VT extensions enabled)
@@ -125,34 +118,39 @@ Description: VDSM addons executed at certain points of a virtual machine life cy
  vmdisk - Add an additional VM disk image
  vmfex - Attach a Cisco VM-FEX device to a VM
 
-Package: vdsm-cli
-Architecture: all
-Depends: ${shlibs:Depends}, ${misc:Depends}, python (>=2.7.3), vdsm-python (>= ${source:Version}), vdsm-xmlrpc (>= ${source:Version})
-Description: VDSM command line interface
- Call VDSM commands from the command line. Used for testing and debugging.
-
-Package: vdsm-debug-plugin
-Architecture: all
-Depends: ${shlibs:Depends}, ${misc:Depends}, python (>=2.7.3), vdsm (>= ${source:Version}), vdsm-xmlrpc (>= ${source:Version})
-Description: VDSM Debug Plugin
- Used by the trained monkeys at Red Hat to insert chaos and mayhem into VDSM.
-
 Package: vdsm-infra
 Architecture: all
 Depends: ${shlibs:Depends}, ${misc:Depends}, python (>=2.7.3)
-Description: Utilities and libraries for vdsm
- Utilities and libraries for vdsm.
+Description: Utilities and libraries for Vdsm
+ Utilities and libraries for Vdsm.
 
 Package: vdsm-jsonrpc
 Architecture: all
 Depends: ${shlibs:Depends}, ${misc:Depends}, python (>=2.7.3), vdsm-python (>= ${source:Version}), vdsm-yajsonrpc (>= ${source:Version}), python-ordereddict, python-simplejson (>= 2.0.9)
-Description: VDSM API Server
- A Json-based RPC interface that serves as the protocol for libvdsm.
+Description: Vdsm API Server
+ A Json-based RPC interface that serves as the protocol for Vdsm.
+
+Package: vdsm-python
+Architecture: all
+Depends: ${shlibs:Depends}, ${misc:Depends}, ${python:Depends}, python (>=2.7.3)
+Description: Vdsm Python libraries
+ Libraries shared between the various Vdsm packages.
+
+Package: vdsm-tests
+Architecture: all
+Depends: ${shlibs:Depends}, ${misc:Depends}, python (>=2.7.3), vdsm (>= ${source:Version}), python-nose
+Description: Unit and functional tests for Vdsm
+ A test suite for verifying the functionality of a running Vdsm instance.
 
 Package: vdsm-xmlrpc
 Architecture: all
 Depends: ${shlibs:Depends}, ${misc:Depends}, python (>=2.7.3), vdsm-python (>= ${source:Version})
-Description: VDSM xmlrpc API
+Description: Vdsm xmlrpc API
  An XMLRPC interface for interacting with vdsmd. Primary control interface for
  ovirt-engine and vdsClient.
 
+Package: vdsm-yajsonrpc
+Architecture: all
+Depends: ${shlibs:Depends}, ${misc:Depends}, python (>=2.7.3), python-simplejson (>= 2.0.9)
+Description: JSON RPC server and client implementation
+ A JSON RPC server and client implementation.
