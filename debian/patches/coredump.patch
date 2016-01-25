@@ -14,7 +14,7 @@ Index: vdsm/init/vdsmd_init_common.sh.in
      if "${getconfitem}" "${conf_file}" vars core_dump_enable false |
        tr A-Z a-z | grep -q true; then
          echo "/var/log/core/core.%p.%t.dump" > /proc/sys/kernel/core_pattern
-@@ -181,7 +182,8 @@ _mk_dom_backup() {
+@@ -187,7 +188,8 @@ _mk_dom_backup() {
  }
  
  _mk_core_path() {

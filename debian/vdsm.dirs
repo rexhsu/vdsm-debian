@@ -62,10 +62,6 @@ etc/vdsm/hooks/before_vm_pause
 etc/vdsm/hooks/before_vm_set_ticket
 etc/vdsm/hooks/before_vm_start
 etc/vdsm/mom.d
-rhev
-rhev/data-center
-rhev/data-center/hsm-tasks
-rhev/data-center/mnt
 usr/share/vdsm
 usr/share/vdsm/gluster
 usr/share/vdsm/network

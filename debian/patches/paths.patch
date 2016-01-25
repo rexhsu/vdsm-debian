@@ -7,7 +7,7 @@ Index: vdsm/configure.ac
  AC_SUBST([vdsmconfdir], ['${sysconfdir}/vdsm'])
  AC_SUBST([vdsmlogdir], ['${localstatedir}/log/vdsm'])
 -AC_SUBST([vdsmrundir], ['${localstatedir}/run/vdsm'])
-+AC_SUBST([vdsmrundir], ['/run/vdsm'])
++AC_SUBST([vdsmrundir], ['/run/vdsm/vdsm'])
  AC_SUBST([vdsmlibdir], ['${localstatedir}/lib/vdsm'])
  AC_SUBST([vdsmbackupdir], ['${vdsmlogdir}/backup'])
  AC_SUBST([vdsmexecdir], ['${libexecdir}/vdsm'])
@@ -15,7 +15,28 @@ Index: vdsm/configure.ac
 +AC_SUBST([vdsmhooksdir], ['${vdsmconfdir}/hooks'])
  AC_SUBST([vdsmtsdir], ['${sysconfdir}/pki/vdsm'])
 -AC_SUBST([vdsmrepo], ['/rhev/data-center'])
-+AC_SUBST([vdsmrepo], ['/run/rhev/data-center'])
++AC_SUBST([vdsmrepo], ['/run/vdsm/rhev/data-center'])
  AC_SUBST([vdsmpylibdir], ['${pythondir}/vdsm'])
  AC_SUBST([vdsminfradir], ['${vdsmpylibdir}/infra'])
  AC_SUBST([vdsmtooldir], ['${vdsmpylibdir}/tool'])
+Index: vdsm/init/vdsmd_init_common.sh.in
+===================================================================
+--- vdsm.orig/init/vdsmd_init_common.sh.in
++++ vdsm/init/vdsmd_init_common.sh.in
+@@ -169,9 +169,15 @@ _DOM_METADATA_BACKUP_DIR="@VDSMLOGDIR@/b
+ 
+ _mk_data_center() {
+     local dc
+-    dc="$("${_GETCONFITEM}" "${_CONF_FILE}" irs repository /rhev/)"
++    dc="$("${_GETCONFITEM}" "${_CONF_FILE}" irs repository /run/vdsm/rhev)"
+     @MKDIR_P@ "${dc}"
++    @MKDIR_P@ "${dc}/data-center"
++    @MKDIR_P@ "${dc}/data-center/hsm-tasks"
++    @MKDIR_P@ "${dc}/data-center/mnt"
+     "@CHOWN_PATH@" @VDSMUSER@:@VDSMGROUP@ "${dc}"
++    "@CHOWN_PATH@" @VDSMUSER@:@VDSMGROUP@ "${dc}/data-center"
++    "@CHOWN_PATH@" @VDSMUSER@:@VDSMGROUP@ "${dc}/data-center/hsm-tasks"
++    "@CHOWN_PATH@" @VDSMUSER@:@VDSMGROUP@ "${dc}/data-center/mnt"
+ }
+ 
+ _mk_dom_backup() {

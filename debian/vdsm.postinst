@@ -47,10 +47,6 @@ case "$1" in
             echo "$end_conf_section" >> /etc/default/sanlock
         fi
 
-        $INSTALLDIR /rhev
-        $INSTALLDIR /rhev/data-center
-        $INSTALLDIR /rhev/data-center/hsm-tasks
-        $INSTALLDIR /rhev/data-center/mnt
         $INSTALLDIR /var/lib/libvirt/qemu/channels
         chmod 775 /var/lib/libvirt/qemu/channels
         $INSTALLDIR /etc/pki/vdsm
