@@ -81,9 +81,4 @@ var/lib/vdsm/upgrade
 var/log/core
 var/log/vdsm
 var/log/vdsm/backup
-var/run/vdsm
-var/run/vdsm/payload
-var/run/vdsm/v2v
-var/run/vdsm/sourceRoutes
-var/run/vdsm/trackedInterfaces
 usr/share/vdsm/network/configurators

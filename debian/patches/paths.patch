@@ -40,3 +40,12 @@ Index: vdsm/init/vdsmd_init_common.sh.in
  }
  
  _mk_dom_backup() {
+@@ -191,7 +197,7 @@ _mk_core_path() {
+ _mk_run_path() {
+     local run_path
+ 
+-    for run_path in "@VDSMRUNDIR@"; do
++    for run_path in "@VDSMRUNDIR@" "@VDSMRUNDIR@/payload" "@VDSMRUNDIR@/v2v" "@VDSMRUNDIR@/sourceRoutes" "@VDSMRUNDIR@/trackedInterfaces"; do
+         @MKDIR_P@ "${run_path}"
+         "@CHMOD_PATH@" 755 "${run_path}"
+         "@CHOWN_PATH@" @VDSMUSER@:@VDSMGROUP@ "${run_path}"
