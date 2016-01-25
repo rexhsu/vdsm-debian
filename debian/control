@@ -118,18 +118,6 @@ Description: Vdsm addons executed at certain points of a virtual machine life cy
  vmdisk - Add an additional VM disk image
  vmfex - Attach a Cisco VM-FEX device to a VM
 
-Package: vdsm-infra
-Architecture: all
-Depends: ${shlibs:Depends}, ${misc:Depends}, python (>=2.7.3)
-Description: Utilities and libraries for Vdsm
- Utilities and libraries for Vdsm.
-
-Package: vdsm-jsonrpc
-Architecture: all
-Depends: ${shlibs:Depends}, ${misc:Depends}, python (>=2.7.3), vdsm-python (>= ${source:Version}), vdsm-yajsonrpc (>= ${source:Version}), python-ordereddict, python-simplejson (>= 2.0.9)
-Description: Vdsm API Server
- A Json-based RPC interface that serves as the protocol for Vdsm.
-
 Package: vdsm-python
 Architecture: all
 Depends: ${shlibs:Depends}, ${misc:Depends}, ${python:Depends}, python (>=2.7.3)
@@ -141,16 +129,3 @@ Architecture: all
 Depends: ${shlibs:Depends}, ${misc:Depends}, python (>=2.7.3), vdsm (>= ${source:Version}), python-nose
 Description: Unit and functional tests for Vdsm
  A test suite for verifying the functionality of a running Vdsm instance.
-
-Package: vdsm-xmlrpc
-Architecture: all
-Depends: ${shlibs:Depends}, ${misc:Depends}, python (>=2.7.3), vdsm-python (>= ${source:Version})
-Description: Vdsm xmlrpc API
- An XMLRPC interface for interacting with vdsmd. Primary control interface for
- ovirt-engine and vdsClient.
-
-Package: vdsm-yajsonrpc
-Architecture: all
-Depends: ${shlibs:Depends}, ${misc:Depends}, python (>=2.7.3), python-simplejson (>= 2.0.9)
-Description: JSON RPC server and client implementation
- A JSON RPC server and client implementation.
