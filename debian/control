@@ -72,6 +72,7 @@ Depends: ${shlibs:Depends}, ${misc:Depends},
  vdsm-jsonrpc (= ${binary:Version}),
  vdsm-python (= ${binary:Version}),
  vdsm-xmlrpc (= ${binary:Version}),
+Recommends: corekeeper
 Conflicts: apparmor, vdsm-hook-sriov
 Description: Virtual Desktop Server Manager
  The Vdsm service is required by oVirt Open Virtualization Manager to manage

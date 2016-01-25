@@ -1,0 +1,91 @@
+Index: vdsm/init/vdsmd_init_common.sh.in
+===================================================================
+--- vdsm.orig/init/vdsmd_init_common.sh.in
++++ vdsm/init/vdsmd_init_common.sh.in
+@@ -84,9 +84,10 @@ task_wait_for_network() {
+ }
+ 
+ task_configure_coredump() {
++    return 0
+     local conf_file="@CONFDIR@/vdsm.conf"
+     local getconfitem="@VDSMDIR@/get-conf-item"
+-
++    
+     if "${getconfitem}" "${conf_file}" vars core_dump_enable false |
+       tr A-Z a-z | grep -q true; then
+         echo "/var/log/core/core.%p.%t.dump" > /proc/sys/kernel/core_pattern
+@@ -181,7 +182,8 @@ _mk_dom_backup() {
+ }
+ 
+ _mk_core_path() {
+-    local core_path=/var/log/core
++    return 0
++    local core_path=/var/log/crash/vdsm
+     if ! [ -d "${core_path}" ]; then
+         @MKDIR_P@ "${core_path}" > /dev/null 2>&1
+     fi
+Index: vdsm/tests/toolTests_qemu_ssl.conf
+===================================================================
+--- vdsm.orig/tests/toolTests_qemu_ssl.conf
++++ vdsm/tests/toolTests_qemu_ssl.conf
+@@ -6,5 +6,5 @@ spice_tls_x509_cert_dir="/etc/pki/vdsm/l
+ remote_display_port_min=5900
+ remote_display_port_max=6923
+ lock_manager="sanlock"
+-auto_dump_path="/var/log/core"
++auto_dump_path="/var/crash/vdsm"
+ ## end of configuration section by vdsm-%(LATEST_CONF_VERSION)s
+Index: vdsm/vdsm/sos/vdsm.py.in
+===================================================================
+--- vdsm.orig/vdsm/sos/vdsm.py.in
++++ vdsm/vdsm/sos/vdsm.py.in
+@@ -99,7 +99,7 @@ class vdsm(Plugin, RedHatPlugin):
+             self.addCopySpec("/proc/%s/cmdline" % pid)
+             self.addCopySpec("/proc/%s/status" % pid)
+             self.addCopySpec("/proc/%s/mountstats" % pid)
+-        self.collectExtOutput("/bin/ls -l /var/log/core")
++        self.collectExtOutput("/bin/ls -l /var/crash/vdsm")
+         self.collectExtOutput("/bin/ls -ldZ /etc/vdsm")
+         self.collectExtOutput(
+             "/bin/su vdsm -s /bin/sh -c '/usr/bin/tree -l @VDSMREPO@'")
+Index: vdsm/vdsm/vdsm-logrotate
+===================================================================
+--- vdsm.orig/vdsm/vdsm-logrotate
++++ vdsm/vdsm/vdsm-logrotate
+@@ -7,8 +7,8 @@ if [ $EXITVALUE != 0 ]; then
+     /usr/bin/logger -t logrotate "ALERT exited abnormally with [$EXITVALUE]"
+ fi
+ 
+-if [ -d /var/log/core ] ; then
+-    /usr/bin/find /var/log/core -type f -name '*xz' -mtime +7 -exec /bin/rm -f '{}' \;
++if [ -d /var/crash/vdsm ] ; then
++    /usr/bin/find /var/crash/vdsm -type f -name '*xz' -mtime +7 -exec /bin/rm -f '{}' \;
+     EXITVALUE=$?
+     if [ $EXITVALUE != 0 ]; then
+         /usr/bin/logger -t logrotate "ALERT clean old core files exited abnormally with [$EXITVALUE]"
+Index: vdsm/vdsm/virt/sampling.py
+===================================================================
+--- vdsm.orig/vdsm/virt/sampling.py
++++ vdsm/vdsm/virt/sampling.py
+@@ -247,7 +247,7 @@ class HostSample(TimedSample):
+ 
+     Contains the sate of the host in the time of initialization.
+     """
+-    MONITORED_PATHS = ['/tmp', '/var/log', '/var/log/core', P_VDSM_RUN]
++    MONITORED_PATHS = ['/tmp', '/var/log', '/var/crash/vdsm', P_VDSM_RUN]
+ 
+     def _getDiskStats(self):
+         d = {}
+Index: vdsm/vdsm/vdsm-logrotate.conf.in
+===================================================================
+--- vdsm.orig/vdsm/vdsm-logrotate.conf.in
++++ vdsm/vdsm/vdsm-logrotate.conf.in
+@@ -7,7 +7,7 @@
+     uncompresscmd /usr/bin/unxz
+     compressext .xz
+ }
+-/var/log/core/*.dump {
++/var/crash/vdsm/*.core {
+     rotate 1
+     missingok
+     size 0

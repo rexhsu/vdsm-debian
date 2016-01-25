@@ -1,0 +1,7 @@
+Vdsm for Debian
+===============
+
+Notable changes from upstream:
+
+- Core dumps are handled with the aid of `corekeeper' package, you can find
+  them in /var/crash/vdsm/.

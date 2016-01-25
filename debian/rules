@@ -46,9 +46,6 @@ override_dh_auto_install:
 	install -Dm 0644 vdsm/limits.conf \
 		$(destdir)/etc/security/limits.d/99-vdsm.conf
 	install -Dm 0644 init/systemd/vdsm-tmpfiles.d.conf $(destdir)/etc/vdsm/vdsm-tmpfiles.conf
-	# This is not commonplace, but we want /var/log/core to be a world-writable
-	# dropbox for core dumps
-	install -dDm 1777 $(destdir)/var/log/core
 	# Install the polkit for libvirt
 	install -Dm 0644 vdsm/vdsm-libvirt-access.pkla \
 		$(destdir)/var/lib/polkit-1/localauthority/10-vendor.d/10-vdsm-libvirt-access.pkla
