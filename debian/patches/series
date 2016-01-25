@@ -1,3 +1,4 @@
 add-maintainer-mode.patch
 fix-site-dist-packages.patch
 remove-upstream-debian.patch
+paths.patch

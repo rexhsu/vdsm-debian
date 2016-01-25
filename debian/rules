@@ -16,7 +16,7 @@ override_dh_auto_configure:
 		--disable-libvirt-selinux \
 		--enable-hooks \
 		--libdir=/usr/lib \
-		--libexecdir=/usr/libexec \
+		--libexecdir=/usr/share \
 		--localstatedir=/var \
 		--prefix=/usr \
 		--sysconfdir=/etc \

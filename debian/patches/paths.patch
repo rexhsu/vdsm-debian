@@ -1,0 +1,21 @@
+Index: vdsm/configure.ac
+===================================================================
+--- vdsm.orig/configure.ac
++++ vdsm/configure.ac
+@@ -170,13 +170,13 @@ AC_SUBST([CDROMGROUP], [cdrom])
+ AC_SUBST([vdsmdir], ['${datarootdir}/vdsm'])
+ AC_SUBST([vdsmconfdir], ['${sysconfdir}/vdsm'])
+ AC_SUBST([vdsmlogdir], ['${localstatedir}/log/vdsm'])
+-AC_SUBST([vdsmrundir], ['${localstatedir}/run/vdsm'])
++AC_SUBST([vdsmrundir], ['/run/vdsm'])
+ AC_SUBST([vdsmlibdir], ['${localstatedir}/lib/vdsm'])
+ AC_SUBST([vdsmbackupdir], ['${vdsmlogdir}/backup'])
+ AC_SUBST([vdsmexecdir], ['${libexecdir}/vdsm'])
+-AC_SUBST([vdsmhooksdir], ['${vdsmexecdir}/hooks'])
++AC_SUBST([vdsmhooksdir], ['${vdsmconfdir}/hooks'])
+ AC_SUBST([vdsmtsdir], ['${sysconfdir}/pki/vdsm'])
+-AC_SUBST([vdsmrepo], ['/rhev/data-center'])
++AC_SUBST([vdsmrepo], ['/run/rhev/data-center'])
+ AC_SUBST([vdsmpylibdir], ['${pythondir}/vdsm'])
+ AC_SUBST([vdsminfradir], ['${vdsmpylibdir}/infra'])
+ AC_SUBST([vdsmtooldir], ['${vdsmpylibdir}/tool'])
