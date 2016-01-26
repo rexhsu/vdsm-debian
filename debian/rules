@@ -53,6 +53,9 @@ override_dh_auto_install:
 	install -Dm 0644 lib/vdsm/vdsm.conf.sample \
 		$(destdir)/etc/vdsm/vdsm.conf
 
+override_dh_install:
+	dh_install --fail-missing --exclude .pyc --exclude .pyo
+
 %:
 	dh $@ --with python2
 

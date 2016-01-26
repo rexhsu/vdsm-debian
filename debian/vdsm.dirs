@@ -62,10 +62,3 @@ etc/vdsm/hooks/before_vm_pause
 etc/vdsm/hooks/before_vm_set_ticket
 etc/vdsm/hooks/before_vm_start
 etc/vdsm/mom.d
-var/lib/libvirt/qemu/channels
-var/lib/vdsm
-var/lib/vdsm/netconfback
-var/lib/vdsm/persistence
-var/lib/vdsm/upgrade
-var/log/vdsm
-var/log/vdsm/backup
