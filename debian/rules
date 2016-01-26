@@ -19,6 +19,7 @@ override_dh_auto_configure:
 		--libexecdir=/usr/share \
 		--localstatedir=/var \
 		--prefix=/usr \
+		--runstatedir=/run \
 		--sysconfdir=/etc \
 		--with-libvirt-service-default='/etc/default/libvirt-bin' \
 		--with-qemu-group=kvm \
