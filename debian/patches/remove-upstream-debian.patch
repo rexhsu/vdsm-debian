@@ -10,3 +10,15 @@ Index: vdsm/configure.ac
  	init/Makefile
  	init/systemd/Makefile
  	lib/Makefile
+Index: vdsm/Makefile.am
+===================================================================
+--- vdsm.orig/Makefile.am
++++ vdsm/Makefile.am
+@@ -21,7 +21,6 @@
+ SUBDIRS = \
+ 	client \
+ 	contrib \
+-	debian \
+ 	init \
+ 	lib \
+ 	vdsm \
