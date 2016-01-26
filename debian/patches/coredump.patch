@@ -89,3 +89,16 @@ Index: vdsm/vdsm/vdsm-logrotate.conf.in
      rotate 1
      missingok
      size 0
+Index: vdsm/lib/vdsm/tool/configurators/libvirt.py
+===================================================================
+--- vdsm.orig/lib/vdsm/tool/configurators/libvirt.py
++++ vdsm/lib/vdsm/tool/configurators/libvirt.py
+@@ -306,7 +306,7 @@ FILES = {
+                     'save_image_format': '"lzop"',
+                     'remote_display_port_min': 5900,
+                     'remote_display_port_max': 6923,
+-                    'auto_dump_path': '"/var/log/core"',
++                    'auto_dump_path': '"/var/crash/vdsm"',
+                 },
+ 
+             },
