@@ -14,7 +14,6 @@ override_dh_auto_configure:
 	dh_auto_configure -- \
 		--disable-libvirt-sanlock \
 		--disable-libvirt-selinux \
-		--enable-hooks \
 		--libdir=/usr/lib \
 		--libexecdir=/usr/share \
 		--localstatedir=/var \

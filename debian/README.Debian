@@ -3,8 +3,9 @@ Vdsm for Debian
 
 Notable changes from upstream:
 
-- Vdsm hooks are not enabled by their simple presence.  You must enable them by
-  linking them to corresponding subdirectories in /etc/vdsm/hooks/.
-
 - Core dumps are handled with the aid of `corekeeper' package, you can find
   them in /var/crash/vdsm/.
+
+- Extra hooks are not provided.  Most of those extra hooks are unmaintained
+  and/or their functionality is available without them.  If you still need some
+  of them, you can take and install them from the source package.

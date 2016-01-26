@@ -102,34 +102,6 @@ Depends: ${shlibs:Depends}, ${misc:Depends}, python (>=2.7.3), vdsm (>= ${source
 Description: Vdsm Debug Plugin
  Used by the trained monkeys at Red Hat to insert chaos and mayhem into Vdsm.
 
-Package: vdsm-hooks
-Architecture: all
-Depends: ${shlibs:Depends}, ${misc:Depends}, python (>=2.7.3), vdsm (>= ${source:Version}), python-libguestfs, usbutils
-Conflicts: vdsm-hook-checkimages, vdsm-hook-ethtool-options, vdsm-hook-vhostmd, vdsm-hook-faqemu, vdsm-hook-directlun, vdsm-hook-macspoof, vdsm-hook-extnet, vdsm-hook-fakevmstats, vdsm-hook-fileinject, vdsm-hook-floppy, vdsm-hook-hostusb, vdsm-hook-hugepages, vdsm-hook-ipv6, vdsm-hook-isolatedprivatevlan, vdsm-hook-nestedvt, vdsm-hook-numa, vdsm-hook-openstacknet, vdsm-hook-pincpu, vdsm-hook-promisc, vdsm-hook-qemucmdline, vdsm-hook-qos, vdsm-hook-scratchpad, vdsm-hook-smbios, vdsm-hook-vmfex, vdsm-hook-vmfex-dev, vdsm-hook-vmdisk, vdsm-hook-allocate-net, vdsm-hook-macbind, vdsm-hook-spiceoptions
-Replaces: vdsm-hook-checkimages, vdsm-hook-ethtool-options, vdsm-hook-vhostmd, vdsm-hook-faqemu, vdsm-hook-directlun, vdsm-hook-macspoof, vdsm-hook-extnet, vdsm-hook-fakevmstats, vdsm-hook-fileinject, vdsm-hook-floppy, vdsm-hook-hostusb, vdsm-hook-hugepages, vdsm-hook-ipv6, vdsm-hook-isolatedprivatevlan, vdsm-hook-nestedvt, vdsm-hook-numa, vdsm-hook-openstacknet, vdsm-hook-pincpu, vdsm-hook-promisc, vdsm-hook-qemucmdline, vdsm-hook-qos, vdsm-hook-scratchpad, vdsm-hook-smbios, vdsm-hook-vmfex, vdsm-hook-vmfex-dev, vdsm-hook-vmdisk, vdsm-hook-allocate-net, vdsm-hook-macbind, vdsm-hook-spiceoptions
-Description: Vdsm addons executed at certain points of a virtual machine life cycle
- The package provides the following Vdsm hooks:
- .
- directlun - Attach a LUN to a VM
- faqemu - Fake QEMU emulation (the VM will "think" it has VT extensions enabled)
- fileinject - Insert a file into the VM
- floppy - Attach a floppy image to the VM
- hostusb - Attach a hosts' USB device to the VM
- hugepages - Enable hugepages for the VM
- isolatedprivatevlan - Connect VM to an isolated private VLAN instead of a shared network
- numa - Pin a VM to a NUMA node(s)
- pincpu - Pin a VM to a set of CPU cores
- promisc - Start VM on a promiscous mode enabled network
- qemucmdline - Run an arbitrary QEMU command line
- qos - Set a specific network QoS for a VM
- scratchpad - Start the VM with a disposable disk image, that will be removed when the VM is stopped
- smartcard - Enable SPICE smartcard support for a VM
- smbios - Alter a VMs smbios domain entry
- sriov - Attach an SRIOV device to a VM
- vhostmd - Enable vhostmd for a VM
- vmdisk - Add an additional VM disk image
- vmfex - Attach a Cisco VM-FEX device to a VM
-
 Package: vdsm-python
 Architecture: all
 Depends: ${shlibs:Depends}, ${misc:Depends}, ${python:Depends}, python (>=2.7.3)
