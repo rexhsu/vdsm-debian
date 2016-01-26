@@ -74,12 +74,7 @@ Depends: ${shlibs:Depends}, ${misc:Depends},
  sosreport,
  sudo (>= 1.7.3),
  tree,
- xz-utils,
- vdsm-yajsonrpc (= ${binary:Version}),
- vdsm-infra (= ${binary:Version}),
- vdsm-jsonrpc (= ${binary:Version}),
- vdsm-python (= ${binary:Version}),
- vdsm-xmlrpc (= ${binary:Version}),
+ xz-utils
 Recommends: corekeeper
 Conflicts: apparmor, vdsm-hook-sriov
 Description: Virtual Desktop Server Manager
@@ -90,14 +85,13 @@ Description: Virtual Desktop Server Manager
 
 Package: vdsm-cli
 Architecture: all
-Depends: ${shlibs:Depends}, ${misc:Depends}, python (>=2.7.3), vdsm-python (>= ${source:Version}), vdsm-xmlrpc (>= ${source:Version})
+Depends: ${shlibs:Depends}, ${misc:Depends}, python (>=2.7.3), vdsm-python (>= ${source:Version})
 Description: Vdsm command line interface
  Call Vdsm commands from the command line. Used for testing and debugging.
 
 Package: vdsm-debug-plugin
 Architecture: all
-Depends: ${shlibs:Depends}, ${misc:Depends}, python (>=2.7.3), vdsm (>= ${source:Version}), vdsm-xmlrpc (>= ${source:Version})
-Description: Vdsm Debug Plugin
+Depends: ${shlibs:Depends}, ${misc:Depends}, python (>=2.7.3), vdsm (>= ${source:Version})
 Description: Plugin for debug access to running Vdsm
  Used by the trained monkeys at Red Hat to insert chaos and mayhem into Vdsm.
 
