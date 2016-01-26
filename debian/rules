@@ -55,6 +55,9 @@ override_dh_auto_install:
 
 override_dh_install:
 	dh_install --fail-missing --exclude .pyc --exclude .pyo
+	rm debian/vdsm/usr/share/vdsm/vdsClient* \
+           debian/vdsm/usr/share/vdsm/debugPluginClient.* \
+           debian/vdsm/usr/share/vdsm/vdsmDebugPlugin.*
 
 %:
 	dh $@ --with python2
