@@ -18,9 +18,9 @@ set -e
 
 
 case "$1" in
-	remove)
-        systemctl stop vdsmd || :
-        systemctl stop supervdsmd || :
+    remove)
+        deb-systemd-invoke stop vdsmd || :
+        deb-systemd-invoke stop supervdsmd || :
 
 	vdsm-tool remove-config
     ;;

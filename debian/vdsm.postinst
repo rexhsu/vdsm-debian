@@ -66,7 +66,6 @@ case "$1" in
         chmod 644 /etc/iscsi/initiatorname.iscsi
 
         sysctl -q -p /etc/sysctl.d/vdsm.conf
-        vdsm-tool load-needed-modules
 
         echo /usr/lib/sanlock/ > /etc/ld.so.conf.d/sanlock.conf
         ldconfig
@@ -95,22 +94,22 @@ if [ "$1" = "configure" ]; then
 
     # Both vdsm and supervdsm should be managed here and must be restarted if
     # ran before (code might changed)
-    if systemctl status supervdsmd | grep -q start/running ; then
-        supervdsmd_start_required='yes'
+    if systemctl status supervdsmd | grep -q 'active (running)' ; then
+        supervdsmd_restart_required='yes'
     fi
-    if systemctl status vdsmd | grep -q start/running ; then
-        vdsmd_start_required='yes'
+    if systemctl status vdsmd | grep -q 'active (running)' ; then
+        vdsmd_restart_required='yes'
     fi
     if ! vdsm-tool is-configured --module libvirt >/dev/null 2>&1; then
         vdsm-tool configure --module libvirt --force >/dev/null 2>&1
     fi
-    if [ "${supervdsmd_start_required}" = 'yes' ]; then
-        systemctl stop supervdsmd || :
-        systemctl start supervdsmd || :
+    if [ "${supervdsmd_restart_required}" = 'yes' ]; then
+        deb-systemd-invoke stop supervdsmd || :
+        deb-systemd-invoke start supervdsmd || :
     fi
-    if [ "${vdsmd_start_required}" = 'yes' ]; then
-        systemctl stop vdsmd || :
-        systemctl start vdsmd || :
+    if [ "${vdsmd_restart_required}" = 'yes' ]; then
+        deb-systemd-invoke stop vdsmd || :
+        deb-systemd-invoke start vdsmd || :
     fi
 fi
 

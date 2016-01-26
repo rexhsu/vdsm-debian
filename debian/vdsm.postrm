@@ -20,9 +20,9 @@ set -e
 
 
 case "$1" in
-	purge|remove|disappear)
-        if systemctl status libvirt-bin | grep -q start/running ; then
-            systemctl stop libvirt-bin && systemctl start libvirt-bin
+    purge|remove|disappear)
+        if systemctl status libvirt-bin | grep -q 'active (running)' ; then
+            deb-systemd-invoke restart libvirt-bin
         fi
     ;;
 
