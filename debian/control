@@ -98,6 +98,7 @@ Package: vdsm-debug-plugin
 Architecture: all
 Depends: ${shlibs:Depends}, ${misc:Depends}, python (>=2.7.3), vdsm (>= ${source:Version}), vdsm-xmlrpc (>= ${source:Version})
 Description: Vdsm Debug Plugin
+Description: Plugin for debug access to running Vdsm
  Used by the trained monkeys at Red Hat to insert chaos and mayhem into Vdsm.
 
 Package: vdsm-python
