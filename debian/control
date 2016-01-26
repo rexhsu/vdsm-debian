@@ -21,7 +21,6 @@ Vcs-Browser: http://gerrit.ovirt.org/gitweb?p=vdsm.git
 Package: vdsm
 Architecture: any
 Depends: ${shlibs:Depends}, ${misc:Depends},
- debianutils,
  bridge-utils,
  dmidecode [amd64],
  dosfstools,
@@ -32,7 +31,6 @@ Depends: ${shlibs:Depends}, ${misc:Depends},
  glusterfs-client,
  glusterfs-common (>= 3.4.1),
  gnutls-bin,
- hostname,
  ifupdown,
  initscripts (>= 2.88dsf-13.3),
  iproute,
