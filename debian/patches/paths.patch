@@ -19,6 +19,15 @@ Index: vdsm/configure.ac
  AC_SUBST([vdsmpylibdir], ['${pythondir}/vdsm'])
  AC_SUBST([vdsminfradir], ['${vdsmpylibdir}/infra'])
  AC_SUBST([vdsmtooldir], ['${vdsmpylibdir}/tool'])
+@@ -306,7 +306,7 @@ AC_PATH_PROG([REBOOT_PATH], [reboot], [/
+ AC_PATH_PROG([RESTORECON_PATH], [restorecon], [/sbin/restorecon])
+ AC_PATH_PROG([RM_PATH], [rm], [/bin/rm])
+ AC_PATH_PROG([RSYNC_PATH], [rsync], [/usr/bin/rsync])
+-AC_PATH_PROG([SAFELEASE_PATH], [safelease], [/usr/libexec/safelease/safelease])
++AC_PATH_PROG([SAFELEASE_PATH], [safelease], [/usr/bin/safelease])
+ AC_PATH_PROG([SERVICE_PATH], [service], [/sbin/service])
+ AC_PATH_PROG([SETSID_PATH], [setsid], [/usr/bin/setsid])
+ AC_PATH_PROG([SUDO_PATH], [sudo], [/usr/bin/sudo])
 Index: vdsm/init/vdsmd_init_common.sh.in
 ===================================================================
 --- vdsm.orig/init/vdsmd_init_common.sh.in
