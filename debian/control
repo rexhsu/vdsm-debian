@@ -2,7 +2,17 @@ Source: vdsm
 Section: admin
 Priority: extra
 Maintainer: Milan Zamazal <mzamazal@redhat.com>
-Build-Depends: debhelper (>= 8), python-dev, python-nose
+Build-Depends: debhelper (>= 8),
+               dh-autoreconf,
+               python-dev,
+               python-nose,
+               python-cpopen,
+               python-libvirt,
+               python-netaddr,
+               python-pthreading,
+               python-pyinotify,
+               python-selinux,
+               python-six
 Standards-Version: 3.9.6
 Homepage: http://www.ovirt.org/wiki/Vdsm
 Vcs-Git: git://gerrit.ovirt.org/vdsm

@@ -32,8 +32,8 @@ override_dh_auto_configure:
 		NTPQ_PATH=/usr/bin/ntpq \
 		REBOOT_PATH=/sbin/reboot \
 		SERVICE_PATH=/usr/sbin/service \
-		PYFLAKES=true \
-		PEP8=true \
+		PYFLAKES=false \
+		PEP8=false \
 		NOSE_EXCLUDE=.*
 
 destdir = debian/tmp
