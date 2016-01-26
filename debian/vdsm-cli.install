@@ -1,4 +1,4 @@
-etc/bash_completion.d/vdsClient
+etc/bash_completion.d/vdsClient usr/share/bash-completion/completions/
 usr/bin/vdsClient
 usr/share/man/man1/vdsClient.1
 usr/share/vdsm/vdsClient.py
