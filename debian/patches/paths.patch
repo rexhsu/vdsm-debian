@@ -14,7 +14,7 @@ Index: vdsm/configure.ac
  AC_SUBST([vdsmhooksdir], ['${vdsmexecdir}/hooks'])
  AC_SUBST([vdsmtsdir], ['${sysconfdir}/pki/vdsm'])
 -AC_SUBST([vdsmrepo], ['/rhev/data-center'])
-+AC_SUBST([vdsmrepo], ['${runstatedir}/vdsm/rhev/data-center'])
++AC_SUBST([vdsmrepo], ['${runstatedir}/vdsm/data-center'])
  AC_SUBST([vdsmpylibdir], ['${pythondir}/vdsm'])
  AC_SUBST([vdsminfradir], ['${vdsmpylibdir}/infra'])
  AC_SUBST([vdsmtooldir], ['${vdsmpylibdir}/tool'])
