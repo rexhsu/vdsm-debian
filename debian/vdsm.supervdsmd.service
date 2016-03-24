@@ -1,0 +1,10 @@
+[Unit]
+Description=Auxiliary vdsm service for running helper functions as root
+Requires=libvirtd.service
+
+[Service]
+Type=simple
+LimitCORE=infinity
+EnvironmentFile=-/etc/default/supervdsmd
+ExecStart=/usr/share/vdsm/daemonAdapter /usr/share/vdsm/supervdsmServer --sockfile /run/vdsm/vdsm/svdsm.sock
+Restart=always

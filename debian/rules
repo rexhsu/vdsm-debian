@@ -59,7 +59,13 @@ override_dh_install:
            debian/vdsm/usr/share/vdsm/debugPluginClient.* \
            debian/vdsm/usr/share/vdsm/vdsmDebugPlugin.*
 
+override_dh_installinit:
+	dh_installinit -pvdsm --name=mom-vdsm --noscripts
+	dh_installinit -pvdsm --name=supervdsmd --noscripts
+	dh_installinit -pvdsm --name=vdsm-network --noscripts
+	dh_installinit -pvdsm --name=vdsmd --noscripts
+
 %:
-	dh $@ --with python2
+	dh $@ --with python2,systemd
 
 override_dh_auto_test:

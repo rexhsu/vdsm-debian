@@ -1,0 +1,15 @@
+[Unit]
+Description=Virtual Desktop Server Manager network restoration
+Wants=network.target
+Requires=libvirtd.service
+After=libvirtd.service
+
+[Service]
+Type=oneshot
+EnvironmentFile=-/etc/default/vdsm
+ExecStartPre=/usr/bin/vdsm-tool --vvverbose --append --logfile=/var/log/vdsm/upgrade.log upgrade-unified-persistence
+ExecStart=/usr/bin/vdsm-tool restore-nets
+RemainAfterExit=yes
+
+[Install]
+WantedBy=multi-user.target

@@ -4,6 +4,7 @@ Priority: extra
 Maintainer: Milan Zamazal <mzamazal@redhat.com>
 Build-Depends: debhelper (>= 8),
                dh-autoreconf,
+               dh-systemd (>= 1.5),
                python-dev,
                python-nose,
                python-cpopen,
