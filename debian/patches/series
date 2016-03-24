@@ -3,3 +3,4 @@ fix-site-dist-packages.patch
 remove-upstream-debian.patch
 paths.patch
 coredump.patch
+libvirt-config.patch

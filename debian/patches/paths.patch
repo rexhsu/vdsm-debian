@@ -2,6 +2,19 @@ Index: vdsm/configure.ac
 ===================================================================
 --- vdsm.orig/configure.ac
 +++ vdsm/configure.ac
+@@ -149,10 +149,10 @@ AC_ARG_WITH(
+     [AS_HELP_STRING(
+         [--with-libvirt-service-default=FILE],
+         [configure full path of libvirt service environment file.
+-         @<:@SYSCONFDIR/sysconfig/libvirtd@:>@]
++         @<:@SYSCONFDIR/default/libvirtd@:>@]
+     )],
+     ,
+-    [with_libvirt_service_default="${sysconfdir}/sysconfig/libvirtd"]
++    [with_libvirt_service_default="${sysconfdir}/default/libvirtd"]
+ )
+ AC_SUBST([LIBVIRT_SERVICE_DEFAULT], ["${with_libvirt_service_default}"])
+ 
 @@ -170,13 +170,13 @@ AC_SUBST([CDROMGROUP], [cdrom])
  AC_SUBST([vdsmdir], ['${datarootdir}/vdsm'])
  AC_SUBST([vdsmconfdir], ['${sysconfdir}/vdsm'])
@@ -57,3 +70,16 @@ Index: vdsm/init/vdsmd_init_common.sh.in
          @MKDIR_P@ "${run_path}"
          "@CHMOD_PATH@" 755 "${run_path}"
          "@CHOWN_PATH@" @VDSMUSER@:@VDSMGROUP@ "${run_path}"
+Index: vdsm/lib/vdsm/tool/configurators/libvirt.py
+===================================================================
+--- vdsm.orig/lib/vdsm/tool/configurators/libvirt.py
++++ vdsm/lib/vdsm/tool/configurators/libvirt.py
+@@ -354,7 +354,7 @@ FILES = {
+     'LDCONF': {
+         'path': os.path.join(
+             constants.SYSCONF_PATH,
+-            'sysconfig/libvirtd',
++            'default/libvirtd',
+         ),
+         'configure': _addSection,
+         'removeConf': _removeSection,

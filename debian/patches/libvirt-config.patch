@@ -1,0 +1,13 @@
+Index: vdsm/lib/vdsm/tool/configurators/libvirt.py
+===================================================================
+--- vdsm.orig/lib/vdsm/tool/configurators/libvirt.py
++++ vdsm/lib/vdsm/tool/configurators/libvirt.py
+@@ -363,7 +363,7 @@ FILES = {
+             {
+                 'conditions': {},
+                 'content': {
+-                    'LIBVIRTD_ARGS': '--listen',
++                    'libvirtd_opts': '--listen',
+                     'DAEMON_COREFILE_LIMIT': 'unlimited',
+                 },
+ 
