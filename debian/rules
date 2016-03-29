@@ -45,7 +45,6 @@ override_dh_auto_install:
 		$(destdir)/lib/udev/rules.d/61-vdsm-lvm.rules
 	install -Dm 0644 vdsm/limits.conf \
 		$(destdir)/etc/security/limits.d/99-vdsm.conf
-	install -Dm 0644 init/systemd/vdsm-tmpfiles.d.conf $(destdir)/etc/vdsm/vdsm-tmpfiles.conf
 	# Install the polkit for libvirt
 	install -Dm 0644 vdsm/vdsm-libvirt-access.pkla \
 		$(destdir)/var/lib/polkit-1/localauthority/10-vendor.d/10-vdsm-libvirt-access.pkla
