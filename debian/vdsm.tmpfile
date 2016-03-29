@@ -1,4 +1,5 @@
 d /run/vdsm/vdsm 755 vdsm kvm
+d /run/vdsm/vdsm/nets_restored 755 vdsm kvm
 d /run/vdsm/vdsm/sourceRoutes 755 vdsm kvm
 d /run/vdsm/vdsm/trackedInterfaces 755 vdsm kvm
 d /run/vdsm/vdsm/v2v 700 vdsm kvm
