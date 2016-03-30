@@ -43,7 +43,7 @@ case "$1" in
         end_conf_section="## end of configuration section by vdsm"
         if ! grep "$start_conf_section" /etc/default/sanlock ; then
             echo "$start_conf_section" >> /etc/default/sanlock
-            echo "sanlock_opts=\"\$sanlock_opts -U sanlock -G sanlock\"" >> /etc/default/sanlock
+            echo "sanlock_opts=\"-U sanlock -G sanlock\"" >> /etc/default/sanlock
             echo "$end_conf_section" >> /etc/default/sanlock
         fi
 
