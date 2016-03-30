@@ -100,8 +100,8 @@ if [ "$1" = "configure" ]; then
     if systemctl status vdsmd | grep -q 'active (running)' ; then
         vdsmd_restart_required='yes'
     fi
-    if ! vdsm-tool is-configured --module libvirt >/dev/null 2>&1; then
-        vdsm-tool configure --module libvirt --force >/dev/null 2>&1
+    if ! vdsm-tool is-configured >/dev/null 2>&1; then
+        vdsm-tool configure --force >/dev/null 2>&1
     fi
     if [ "${supervdsmd_restart_required}" = 'yes' ]; then
         deb-systemd-invoke stop supervdsmd || :
