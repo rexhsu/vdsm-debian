@@ -20,7 +20,7 @@ Index: vdsm/configure.ac
  AC_SUBST([vdsmconfdir], ['${sysconfdir}/vdsm'])
  AC_SUBST([vdsmlogdir], ['${localstatedir}/log/vdsm'])
 -AC_SUBST([vdsmrundir], ['${localstatedir}/run/vdsm'])
-+AC_SUBST([vdsmrundir], ['${runstatedir}/vdsm/vdsm'])
++AC_SUBST([vdsmrundir], ['${runstatedir}/vdsm'])
  AC_SUBST([vdsmlibdir], ['${localstatedir}/lib/vdsm'])
  AC_SUBST([vdsmbackupdir], ['${vdsmlogdir}/backup'])
  AC_SUBST([vdsmexecdir], ['${libexecdir}/vdsm'])
@@ -49,7 +49,7 @@ Index: vdsm/init/vdsmd_init_common.sh.in
  _mk_data_center() {
      local dc
 -    dc="$("${_GETCONFITEM}" "${_CONF_FILE}" irs repository /rhev/)"
-+    dc="$("${_GETCONFITEM}" "${_CONF_FILE}" irs repository /run/vdsm/rhev)"
++    dc="$("${_GETCONFITEM}" "${_CONF_FILE}" irs repository /run/vdsm)"
      @MKDIR_P@ "${dc}"
 +    @MKDIR_P@ "${dc}/data-center"
 +    @MKDIR_P@ "${dc}/data-center/hsm-tasks"

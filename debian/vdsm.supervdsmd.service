@@ -6,5 +6,5 @@ Requires=libvirtd.service
 Type=simple
 LimitCORE=infinity
 EnvironmentFile=-/etc/default/supervdsmd
-ExecStart=/usr/share/vdsm/daemonAdapter /usr/share/vdsm/supervdsmServer --sockfile /run/vdsm/vdsm/svdsm.sock
+ExecStart=/usr/share/vdsm/daemonAdapter /usr/share/vdsm/supervdsmServer --sockfile /run/vdsm/svdsm.sock
 Restart=always
