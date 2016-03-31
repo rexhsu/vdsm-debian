@@ -55,7 +55,7 @@
 %global _udevexecdir /usr/lib/udev/
 
 Name:           %{vdsm_name}
-Version:        4.17.17
+Version:        4.17.23.2
 Release:        0%{?dist}%{?extra_release}
 Summary:        Virtual Desktop Server Manager
 BuildArch:      noarch
@@ -754,6 +754,10 @@ fi
 
 # The following triggers vdsmd.preset file and enables vdsm required services
 %systemd_post vdsmd.service
+%systemd_post supervdsmd.service
+%systemd_post vdsm-network.service
+%systemd_post mom-vdsm.service
+%systemd_post ksmtuned.service
 
 # VDSM installs unit files - daemon-reload will refresh systemd
 /bin/systemctl daemon-reload >/dev/null 2>&1 || :
@@ -767,6 +771,7 @@ fi
 %systemd_preun vdsm-network.service
 %systemd_preun supervdsmd.service
 %systemd_preun mom-vdsm.service
+%systemd_preun ksmtuned.service
 exit 0
 
 %postun
@@ -1091,6 +1096,7 @@ exit 0
 %{python_sitelib}/%{vdsm_name}/define.py*
 %{python_sitelib}/%{vdsm_name}/exception.py*
 %{python_sitelib}/%{vdsm_name}/executor.py*
+%{python_sitelib}/%{vdsm_name}/health.py*
 %{python_sitelib}/%{vdsm_name}/ipwrapper.py*
 %{python_sitelib}/%{vdsm_name}/jsonrpcvdscli.py*
 %{python_sitelib}/%{vdsm_name}/libvirtconnection.py*
