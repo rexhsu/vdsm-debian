@@ -1,4 +1,4 @@
-vdsm (4.17.17-1) unstable; urgency=low
+vdsm (4.17.23.2-1) unstable; urgency=low
 
   * Initial official Debian package, based on oVirt releng-tools packaging;
     closes: #668538.
