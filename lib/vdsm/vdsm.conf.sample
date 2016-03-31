@@ -203,6 +203,10 @@
 # python ssl module
 # ssl_implementation = @SSL_IMPLEMENTATION@
 
+# Time in seconds defining how long we are going to wait for create
+# migration response.
+# migration_create_timeout = 600
+
 [rpc]
 
 # Number of worker threads to serve jsonrpc server.
@@ -377,6 +381,12 @@
 # default. Use environment file /etc/sysconfig/vdsm to set
 # COVERAGE_PROCESS_START and COVERAGE_FILE variables.
 # coverage_enable = false
+
+# Enable Vdsm health monitoring.
+# health_monitor_enable = false
+
+# Number of seconds to wait between health checks.
+# health_check_interval = 60
 
 [gluster]
 

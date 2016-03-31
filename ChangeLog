@@ -1,3 +1,711 @@
+2016-03-27  Adam Litke  <alitke@redhat.com>
+
+	storage: Clean up image links during teardownImage
+	In commit 736ab9 we began cleaning up volume links that were created in
+	/var/run/vdsm/images/... Unfortunately on block domains we are leaving
+	around a broken symlink in /rhev/data-center/... in some cases and this
+	will cause storage operations related to a disk of a VM that was
+	previously running to fail on this host.  The solution is to also remove
+	this broken symlink during teardownImage.
+
+	Bug-Url: https://bugzilla.redhat.com/1321444
+	Continuous-Integration: Jenkins CI
+	Continuous-Integration: Yaniv Bronhaim <ybronhei@redhat.com>
+
+	blockVolume: Remove stale links to image directory
+	Since we started to create the image directory under "/run/vdsm", the
+	image directory under "/rhev/data-center/pool/sd/images/" may be a link
+	to "/run/vdsm/storage/sd/image".
+
+	The old code (from rhev-3.0) creating the image directory lazily was not
+	designed to handle links and was happily using a stale link instead of
+	creating the image directory.
+
+	Now we detect and remove stale links, so proper image directory is
+	created. Since stale links are not expected in normal usage, we log a
+	warning in this case.
+
+	Bug-Url: https://bugzilla.redhat.com/1321444
+	Continuous-Integration: Jenkins CI
+	Continuous-Integration: Yaniv Bronhaim <ybronhei@redhat.com>
+
+2016-03-14  Edward Haas  <edwardh@redhat.com>
+
+	net: Ignore IPv6 addresses
+	IPv6 support in 3.6 is partial, causing unexpected results when a host
+	is ipv6 enabled.
+
+	This patch ignores IPv6 address checks on the persistent and kernel
+	config.
+	Specifically, a scenario where a host comes up with an IPv6 address
+	assigned (through slaac/autoconf), kernel vs persistent config check
+	will pass.
+
+	Bug-Url: https://bugzilla.redhat.com/1219363
+	Continuous-Integration: Dan Kenigsberg <danken@redhat.com>
+
+2016-03-08  Dan Kenigsberg  <danken@redhat.com>
+
+	vmfex hook: remove filter from directly-attached vnics
+	It seems that libvirt has become more strict, and would not accept a
+	filterref that it cannot enforce. This patch makes the hook drop the
+	<filterref> element that is added by Vdsm.
+
+	Bug-Url: https://bugzilla.redhat.com/show_bug.cgi?id=1308839
+	Continuous-Integration: Jenkins CI
+	(cherry picked from commit 3b81a65ad0d95145e85fc11e96828465cbb0d446)
+	(cherry picked from commit e1c9e30c91ff246ae1e4eb32c24dc62c9c929609)
+
+2016-03-03  Edward Haas  <edwardh@redhat.com>
+
+	net: Adjust the parsing of multiline tc error
+	tc errors are parsed to determine the failure cause.
+	Recently a new error output has been seen, whith a multiline message
+	where the expected prefix ('RTNETLINK answers') was not in the first
+	line. ('Message truncated\nMessage truncated\nRTNETLINK answers:')
+
+	This patch fixes the parsing of the error message by checking each line
+	for the prefix.
+
+	Bug-Url: https://bugzilla.redhat.com/1303410
+	Continuous-Integration: Jenkins CI
+	Continuous-Integration: Dan Kenigsberg <danken@redhat.com>
+
+2016-02-23  Adam Litke  <alitke@redhat.com>
+
+	Live Merge: Skip initial extension when base is raw
+	When starting a live merge we pre-extend the base volume in order to
+	accomodate the data that will be merged into the base volume.  This is
+	only necessary for thinly provisioned block volumes.  Check to make sure
+	that the base volume is eligible for extension before extending it.
+
+	Bug-Url: https://bugzilla.redhat.com/1301709
+	Continuous-Integration: Nir Soffer <nsoffer@redhat.com>
+	Continuous-Integration: Francesco Romani <fromani@redhat.com>
+
+2016-02-22  Nir Soffer  <nsoffer@redhat.com>
+
+	tests: Fix loop device leak in mount tests
+	We used to unmount loop devices without using force=True and
+	freeloop=True. This may lead to loop device leak, failing the later
+	tests trying to mount loop devices. We also did not wait for udev events
+	when unmounting a loop device, which is asynchronous operation.
+
+	Both issues were fixed long time ago (commit dbfdc90) in the mkimageTests.
+	Apply the same fix for mount tests.
+
+	Continuous-Integration: Jenkins CI
+	Continuous-Integration: Dan Kenigsberg <danken@redhat.com>
+
+2016-02-18  pkliczewski  <piotr.kliczewski@gmail.com>
+
+	hooks: make sure to handle vdsm exception in the bridge
+	We need to make sure to handle hook errors properly and pass them to
+	the client.
+
+
+	Bug-Url: https://bugzilla.redhat.com/1295778
+	Continuous-Integration: Jenkins CI
+	Continuous-Integration: Francesco Romani <fromani@redhat.com>
+
+	hooks: moving hook error to exception module
+	Required-For: https://bugzilla.redhat.com/1295778
+	Continuous-Integration: Jenkins CI
+	Continuous-Integration: Francesco Romani <fromani@redhat.com>
+
+2016-02-18  Nir Soffer  <nsoffer@redhat.com>
+
+	exception: Make VdsmException reusable
+	VdsmException was initializing code and message to default values if
+	called without arguments. This make is useless as as base class for
+	more specific exceptions, defining real code and message.
+
+	GlusterException, the only exception inheriting from VdsmException,
+	avoided this issue by overriding __init__.
+
+	Required-For: https://bugzilla.redhat.com/1295778
+	Continuous-Integration: Jenkins CI
+	Continuous-Integration: Francesco Romani <fromani@redhat.com>
+
+2016-02-16  Nir Soffer  <nsoffer@redhat.com>
+
+	hsm: Remove image run links in teardownImage
+	We were creating the /run/vdsm/sd_uuid/img_uuid in prepareImage, but we
+	never delete it. This directory (block storage) or link (file storage)
+	are used by hosted engine VM so it can run without a connected pool.
+
+	After vdsm maintenance, file storage domain mount path may change,
+	invalidating the links. When we create the links, we skip existing
+	links, assuming that the link target cannot change. Any operation with
+	the stale link will fail.
+
+	We need two fixes:
+	1. Remove links created in prepareImage during teardownImage
+	2. For the unlikely case when Vdsm was terminated before teardownImage
+	   was completed, repair stale links during creation.
+
+	This patch fixes the first issue. The second issue is handled in
+	https://gerrit.ovirt.org/52937.
+
+	Bug-Url: https://bugzilla.redhat.com/1300749
+	Continuous-Integration: Jenkins CI
+	Continuous-Integration: Francesco Romani <fromani@redhat.com>
+
+2016-02-10  Martin Polednik  <mpolednik@redhat.com>
+
+	hostdev: fix detection for ppc64le
+	x86_64 detects the state of hostdev support by looking at 2 places:
+
+	* /sys/class/iommu to determine the status of DMA remapping,
+	* /sys/kernel/iommu_groups to determine that at least some IOMMU groups
+	  exist.
+
+	The issue in ppc64le is related to the first place - /sys/class/iommu
+	is newer interface and may not be supported on all kernels. 7.2 on
+	x86_64 seems to be updated enough that we can keep the detection, but
+	for ppc64le we cannot use it.
+
+	Bug-Url: https://bugzilla.redhat.com/show_bug.cgi?id=1306196
+	Continuous-Integration: Jenkins CI
+	Continuous-Integration: Francesco Romani <fromani@redhat.com>
+
+2016-02-09  Nir Soffer  <nsoffer@redhat.com>
+
+	storageServer: Normalize local path before escaping
+	Hosted engine setup does not normalize mount path, so hosted engine
+	storage domain with trailing slash:
+
+	    /foo/
+
+	will be mounted at:
+
+	    /rhev/data-center/mnt/_foo_
+
+	This is harmless until hosted engine try to import the hosted engine
+	storage domain, recreating the storage domain path from the storage
+	domain information, returning a normalized remote path. After importing
+	the domain, the host will have the same remote path mounted twice at
+	two different local paths:
+
+	    /rhev/data-center/mnt/_foo
+	    /rhev/data-center/mnt/_foo_
+
+	Mounting the same domain twice does not work, leading to failure.
+
+	Storage domains created in engine do not have this issue since engine
+	does not allow path with trailing slash.
+
+	We are normalizing mount remote and local path, both before mount, and
+	when reading mount information from /proc/mounts and /etc/mtab.
+	However, we were escaping slashes in the normal path *before*
+	normalizing it, so the normalization had no effect.
+
+	This patch normalize the local path before escaping slashes, to match
+	the intent of the original code, and avoid such issues in the future.
+
+	This change does not fix hosted engine system with unnormalized local
+	path. The only way to fix this is to disconnect the storage domain and
+	connect it again with a normalized path.
+
+	Bug-Url: https://bugzilla.redhat.com/1300749
+	Continuous-Integration: Jenkins CI
+	(cherry picked from commit b1b60ec663a8d599f3f889421bcc8bdd04030d9e)
+	Continuous-Integration: Dan Kenigsberg <danken@redhat.com>
+
+2016-02-08  Dan Kenigsberg  <danken@redhat.com>
+
+	vmfex hook: hold a ref for a virDomain object
+	commit 93feb1c introduced a weakref to virDomain object to avoid
+	reference cycles. This causes a surprising behaviour: if we do not hold
+	a reference to virdomain.Notifying, the underlying virDomain is
+	garbage-collected before being accessed for the first time.
+
+	This patch quickly holds a named reference to the domain. I did not find
+	other pieces of code with the same problem, however, the mechanism seems
+	dangerously error-prone.
+
+	This bug is easily reproduced with
+
+	    from vdsm import libvirtconnection
+	    c = libvirtconnection.get()
+	    print(c.lookupByName('my-vm').XMLDesc(0))
+
+	and "solved" by
+
+	    from vdsm import libvirtconnection
+	    c = libvirtconnection.get()
+	    v = c.lookupByName('my-vm')
+	    print(v.XMLDesc(0))
+
+	Bug-Url: https://bugzilla.redhat.com/show_bug.cgi?id=1305338
+	Continuous-Integration: Jenkins CI
+	(cherry picked from commit 2c0ce3bcce39224a7263b6c9c793ea80ec4322ae)
+
+2016-02-01  Idan Shaby  <ishaby@redhat.com>
+
+	sp: update domain links on state change
+	In some situations (e.g. after a reconstructMaster command) the domain
+	links may be missing and it's impossible to recreate them on
+	connectStoragePool or refreshStoragePool since the storage may be
+	unreachable. The best we can do is recreate them as soon as the domains
+	are visible again.
+
+	This patch is based on a patch that was merged into ovirt-engine-3.4
+	but was never merged into master: https://gerrit.ovirt.org/#/c/27466/ .
+	It also deals with a few issues that patch had:
+
+	- It adds the "@unsecured" decoration to _domainStateChange, since
+	  without it we get a SecureError in case that the host that runs it is
+	  not the SPM.
+
+	- In the other patch, onDomainStateChange was registered in the
+	  constructor of StoragePool.
+	  This is a waste of resources since these events can be called only
+	  after the connect method is called (specifically, after __rebuild is
+	  called from within connect).
+	  Also, onDomainStateChange is never unregistered, causing a leak of a
+	  registration for every pool disconnection or unsuccessful connection.
+	  This patch moves the registration to onDomainStateChange to be right
+	  before it can actually be called (in connect), and calls unregister if
+	  an error has occurred in __rebuild.
+	  A call to unregister was also added to the disconnect method, so that
+	  we won't be listening to events that cannot be called anymore.
+
+	- This patch locks the pool and the domain id's in _domainStateChange:
+	  On the pool, a shared lock is taken since we query the pool's state.
+	  On the domain, we take a new <domain_uuid>_repo exclusive lock to
+	  prevent concurrent calls to_refreshDomainLinks.
+
+	Relates-To: https://bugzilla.redhat.com/show_bug.cgi?id=1091030
+	Bug-Url: https://bugzilla.redhat.com/1271771
+	Continuous-Integration: Jenkins CI
+	Continuous-Integration: Francesco Romani <fromani@redhat.com>
+
+2016-01-26  Vinzenz Feenstra  <vfeenstr@redhat.com>
+
+	guest-agent: desktopLock exception on EBADF should be ignored
+	There's no more logging of the EBADF exceptions on desktopLock thrown
+	when the sockets are closed, since this is very likely to happen on a
+	migration because we are receiving multiple display disconnect events
+	which are delayed for 2 seconds before being processed to avoid the
+	screen to be locked in migration cases - in allows the lock not to be
+	executed when we're already connected again (e.g. on a fast reconnect
+	of the display)
+	Therefore the exception on its own does not provide much value and
+	therefore is explicitely swallowed for the desktopLock case.
+
+	All other exceptions are still logged, in case something unexpected
+	happens.
+
+	Additional note on the multiple disconnect events: We have
+	implemented and merged a fix already to reduce this to one time.
+	However this depends on a fixed libvirt - because they had a bug
+	that they did not report the client remote ports and therefore
+	we couldn't make a decision whether or not the disconnect event
+	should be handled or not - so we handle it 4 times for now.
+
+	Backport-To: 3.6
+	Bug-Url: https://bugzilla.redhat.com/1151863
+	Continuous-Integration: Jenkins CI
+	(cherry picked from commit e8113ce56e7fe741cfd5f1c26f7c1b0c6f9b19b8)
+
+2016-01-26  Dan Kenigsberg  <danken@redhat.com>
+
+	restore-net: _get_persisted_numvfs
+	Former code attempted to match a pci device path (e.g. 0000:05:00.0)
+	with libvirt pci device name (e.g. pci_0000_05_00_0), and failed.
+
+	This patch adds the required conversion between the two.
+
+	Bug-Url: https://bugzilla.redhat.com/1301349
+	Continuous-Integration: Jenkins CI
+
+2016-01-25  pkliczewski  <piotr.kliczewski@gmail.com>
+
+	migration: set timeout to 10 mins
+	On heavily loaded environments createMigration call can take a lot of
+	time so we want to make sure that we do not timeout prematurely.
+
+
+	Bug-Url: https://bugzilla.redhat.com/1188543
+	Continuous-Integration: Jenkins CI
+
+2016-01-25  Nir Soffer  <nsoffer@redhat.com>
+
+	health: Report resource usage
+	Report cpu usage in the last interval, memory size, memory delta, and
+	number of threads:
+
+	    user=7.67%, sys=3.07%, rss=68716 kB (+2188), threads=60
+
+	Bug-Url: https://bugzilla.redhat.com/1269424
+	Continuous-Integration: Jenkins CI
+
+	health: Introduce Vdsm health monitoring
+	Debugging Vdsm in the field is very hard, because we don't have enough
+	information about Vdsm resource usage. This patch adds a new health
+	monitoring thread, checking Vdsm health every 60 seconds.
+
+	For now, we monitor only uncollectable objects that the garbage
+	collector cannot collect. In the future we should report other
+	information like used memory, number of active threads, etc.
+
+	Health information is only logged; in the future we may post events to
+	engine.
+
+	Bug-Url: https://bugzilla.redhat.com/1269424
+	Continuous-Integration: Jenkins CI
+
+	concurrent: Introduce concurrent.thread() utility
+	We are repeating this boilerplate code everywhere:
+
+	    def __init__(self):
+	        self._thread = threading.Thread(target=self._run, name="foobar")
+	        self._thread.daemon = True
+
+	    @utils.traceback(on=log.name)
+	    def _run(self):
+	        # stuff to run in thread
+
+	This boilerplate is going to become worse since we want to set thread
+	system name in the thread target method.
+
+	This patch introduces concurrent.thread() utility function, eliminating
+	the boilerplate:
+
+	    def __init__(self):
+	        self._thread = concurrent.thread(self._run, name="foobar",
+	                                         logger=self.log.name)
+
+	    def _run(self):
+	        # stuff to run in thread
+
+	This utility will be extended later to set system thread name based on
+	Python thread name.
+
+	Bug-Url: https://bugzilla.redhat.com/1269424
+	Continuous-Integration: Jenkins CI
+
+2016-01-25  Francesco Romani  <fromani@redhat.com>
+
+	vm: delete recovery file only after destroy()
+	We must not re-create a recovery file after it
+	is cancelled, because this will create an orphan
+	recovery file, and ghost VMs (see BZ below).
+
+	But we should also do not delete the recovery
+	file too early, because Engine is in charge
+	of collecting down VMs, and Vdsm is not really
+	done with VMs until that moment.
+
+	So, we move the cleanup of the recovery file
+	in deleteVm. We kill the recovery file only
+	when we wipe out the VM from the system, not earlier.
+
+	Bug-Url: https://bugzilla.redhat.com/1253043
+	Continuous-Integration: Jenkins CI
+
+	vm: make _deleteVm() more robust
+	Use else: clause in a try: block to make
+	deleteVm() more robust and a bit nicer.
+
+	Backport-To: 3.6
+	Backport-To: 3.5
+	Bug-Url: https://bugzilla.redhat.com/1253043
+	Continuous-Integration: Jenkins CI
+
+	vm: safer removal of the recovery file
+	If a user shutdowns a VM from inside the guest, Vdsm leaves
+	a stale recovery file.
+	The cause is a race between onQemuDeath, being asynchronous, and
+	Vm.destroy().
+	The actual culprit is the ordering of events between onQemuDeath and
+	destroy(), and the shutdown from within the guest is just the easiest
+	way to trigger this issue.
+
+	In the QEMU death path, Vdsm calls releaseVm, which wipes the recovery
+	file, and after a succesful completion does saveState, which recreates
+	the recovery file.
+	Later, on destroy(), Vdsm tries to do releaseVm again, but releaseVm
+	will not run, because of the flag that the previous succesful
+	call set. releaseVm must run exactly once.
+
+	Correct sequence:
+	- destroy()
+	-- vm._destroyed = True
+	-- releaseVm() - done (vm._released == False)
+	-- vm._released = True
+	[later]
+	- onQemuDeath
+	-- releaseVm() - skipped (vm._released == True)
+	-- saveState() - skipped (vm._destroyed == True)
+
+	Faulty sequence:
+	- onQemuDeath()
+	-- releaseVm() - done (vm._released == False)
+	-- vm._released = True
+	-- saveState() - done <BUG!> (vm._destroyed == False)
+	[later]
+	- destroy()
+	-- vm._destroyed = True
+	-- releaseVm() - skipped (vm._released == True)
+
+	The fix is to protect the recoveryFile handling with a lock.
+
+	Backport-To: 3.6
+	Backport-To: 3.5
+	Bug-Url: https://bugzilla.redhat.com/1253043
+	Continuous-Integration: Jenkins CI
+
+2016-01-23  Yaniv Bronhaim  <ybronhei@redhat.com>
+
+	Run %systemd_post on all effected unit files
+	To load vdsmd.preset file during installation we need to run
+	%systemd_post script for each effected service
+
+	Bug-Url: https://bugzilla.redhat.com/show_bug.cgi?id=1167322
+	Continuous-Integration: Jenkins CI
+
+2016-01-22  Francesco Romani  <fromani@redhat.com>
+
+	vm: extract cleanupRecoveryFile() helper
+	This patch improves the code a tiny bit,
+	and makes it easier to implement the next patch, which wants
+	to fix a bug.
+
+	Backport-To: 3.6
+	Backport-To: 3.5
+	Bug-Url: https://bugzilla.redhat.com/1253043
+	Continuous-Integration: Jenkins CI
+
+2016-01-22  Nir Soffer  <nsoffer@redhat.com>
+
+	resourceManager: Fix ResourceRef leak
+	Each time we create a disk, we leak 6 objects; one ResourceRef and
+	several pthreading Locks and Conditions:
+
+	    Thread-13::WARNING::2016-01-15 20:29:43,126::health::102::health::
+	    (_check_garbage) Found 6 uncollectable objects: [
+	    "< ResourceRef '869b6036-a9ca-43eb-9287-828803822783_imageNS.
+	    489402de-1850-4dfd-b71a-193b92f402e1', isValid: 'False'
+	    obj: 'None'>",
+	    '<pthreading.Lock object at 0x7f6ecc04a5a8>',
+	    '<pthreading.Lock object at 0x7f6ee4028368>',
+	    '<pthread.Cond object at 0x7f6f040fcf10>',
+	    '<pthread.Cond object at 0x7f6f040fcb50>',
+	    '<pthread.Cond object at 0x7f6f040fce10>']
+
+	ResourceRef is adding some of its wrapped object methods to itself,
+	creating a reference cycle. Because it also implements __del__, this
+	wrapping make it uncollectable.  Use weakref.proxy to avoid the
+	reference cycle, fixing this leak.
+
+	Bug-Url: https://bugzilla.redhat.com/1269424
+	Continuous-Integration: Jenkins CI
+
+2016-01-21  Francesco Romani  <fromani@redhat.com>
+
+	lib: use weakmethod to break reference cycles
+	The libvirtconnection module replaces the methods
+	of libvirt.virDomain object (et. al.) to detect libvirt
+	errors, and to take action in presence of certain errors,
+	maybe dropping the connection, maybe killing Vdsm.
+
+	While the whole idea of this wrapping and how to properly
+	react to these events is debatable and should probably
+	rewritten, the immediate issue is that this wrapping is not safe,
+	and creates circular references in instance methods:
+
+	   +-------------------------------------+
+	   v                                     |
+	object -> wrapper -> tuple of arguments(self, method)
+
+	Since libvirt.virDomain defines the __del__ special method,
+	objects become uncollectable, and the net final effect is
+	a resource leak each time a VM is stopped.
+
+	This was observed for virDomain, but the wrapping of
+	virConnect has also the same problem.
+
+	This patch uses utils.weakmethod to break the reference cycle in a
+	backport-friandly manner, in order to make the objects collectable
+	again, and to avoid the leak.
+
+	The proper long-term fix is to rethink the wrapping done in
+	libvirtconnection.py, but this deserves more planning and
+	will be addressed in a future patch.
+
+	Bug-Url: https://bugzilla.redhat.com/1283999
+	Bug-Url: https://bugzilla.redhat.com/1269424
+	Backport-To: 3.6
+	Backport-To: 3.5
+	Reported-By: Eldad Marciano <emarcian@redhat.com>
+	Reported-By: Milan Zamazal <mzamazal@redhat.com>
+	Continuous-Integration: Jenkins CI
+
+	utils: add weakmethod helper
+	The libvirtconnection module adds wrapping around virDomain
+	objects, to detect and react libvirt issues, like timeouts and
+	connection errors.
+
+	This patch adds a helper function to wrap instance methods
+	avoiding circular references which in turn may render some objects
+	uncollectable, causing leaks.
+
+	Note: this patch previously included tests, which were
+	stripped to another patch, because of unrelated failures
+	made them failed constantly.
+
+	Bug-Url: https://bugzilla.redhat.com/1283999
+	Backport-To: 3.6
+	Backport-To: 3.5
+	Reported-By: Eldad Marciano <emarcian@redhat.com>
+	Reported-By: Milan Zamazal <mzamazal@redhat.com>
+	Continuous-Integration: Jenkins CI
+
+2016-01-19  Milan Zamazal  <mzamazal@redhat.com>
+
+	virt: Don't expose GuestAgent.guestInfo directly
+	GuestAgent.getGuestInfo() returns its guestInfo dict attribute directly,
+	so the callers may modify it.  guestInfo is a public attribute so it
+	shouldn't be a problem in theory as it's possible to modify that
+	attribute anyway without calling getGuestInfo().  But guestInfo isn't
+	used anywhere outside GuestAgent and should be probably changed to a
+	private attribute.
+
+	The problem of modifiable internal structure is exposed in
+	Vm._getGuestStats where modifications to guestInfo cause incorrect
+	memUsage values reported in case of repeated invocations (see the
+	referenced bug).
+
+	The safest approach to the problem is to return a deep copy of guestInfo
+	from getGuestInfo().  However, making a deep copy can have performance
+	issues, e.g. when copying a list of thousands installed Windows
+	packages.  For that reason we return just a shallow copy, which should
+	suffice for typical uses.
+
+	Bug-Url: https://bugzilla.redhat.com/1295428
+	Continuous-Integration: Jenkins CI
+
+2016-01-19  pkliczewski  <piotr.kliczewski@gmail.com>
+
+	supervdsm: failed validateAccess leaves pipes open
+	Whenever we run validateAccess and it fails with "Permission denied" we
+	leak file descriptors. We need to make sure to close child and parent
+	pipes.
+
+
+	Bug-Url: https://bugzilla.redhat.com/1271575
+	Continuous-Integration: Jenkins CI
+	Continuous-Integration: Yaniv Bronhaim <ybronhei@redhat.com>
+
+2016-01-18  Francesco Romani  <fromani@redhat.com>
+
+	vm: safer handling of conf in restore
+	In the restore state (aka dehibernation) path, there
+	are a few places left on which the code mutates
+	Vm.conf without the protection of the confLock.
+	There is no obvious reason to have those mutations
+	unguarded, so this patch adds the confLock protection.
+
+	Backport-To: 3.6
+	Backport-To: 3.5
+	Bug-Url: https://bugzilla.redhat.com/1296936
+	Continuous-Integration: Jenkins CI
+
+	virt: safer handling of migration parameters
+	The Migration Source code path needs to store additional
+	transient migration parameters in the Vm configuration state,
+	to be both saved on recovery file and transmitted on the
+	destination VM.
+	Those parameters will be dropped once the migration is done.
+
+	Up until now, the migration code mangled the Vm state from the outside.
+	This was ugly and unsafe, because the configuration was mutated without
+	any locking.
+
+	Under high migration load, this can lead to RuntimeErrors, because
+	the clients of Vm.conf (e.g. status(), getVMList()...) expect the
+	lock being held and the access serialized.
+
+	To fix those issues, we add a helper method into Vm class, to
+	let the migration code temporarily store the data it needs in a safe
+	and simple way.
+
+	Backport-To: 3.6
+	Backport-To: 3.5
+	Bug-Url: https://bugzilla.redhat.com/1296936
+	Continuous-Integration: Jenkins CI
+
+2016-01-18  Maor Lipchuk  <mlipchuk@redhat.com>
+
+	lun: Serial attr should not passed to libvirt for lun disks.
+	Following the change which was introduced at
+	libvirt-1.2.17-5 and qemu-kvm-rhev-2.3.0-18, libvirt now enforce
+	that a scsi-block 'lun' device should not provide the 'serial' property.
+
+	To comply with this change, this patch introduces a change
+	that a VM should ignore 'serial' property for lun devices when
+	passing the XML to libvirt.
+
+	This patch was verified by running a VM with lun disk which
+	had enabled SCSI Pass-Through and also plugging the same lun disk
+	while the VM was running. The operation succeeded.
+
+	Bug-Url: https://bugzilla.redhat.com/1291930
+	Continuous-Integration: Jenkins CI
+
+2016-01-18  Francesco Romani  <fromani@redhat.com>
+
+	migration: use context manager for semaphore
+	The migration source code path needs to take the
+	ongoingMigrations semaphore, to throttle the outgoing
+	migrations.
+
+	The code did so using the pre-2.6 way, explicitly
+	using acquire() and release().
+
+	This patch switches the code to the context manager
+	semantics, to make the code a bit nicer and to unlock
+	further refactoring.
+
+	Backport-To: 3.6
+	Backport-To: 3.5
+	Bug-Url: https://bugzilla.redhat.com/1296936
+	Continuous-Integration: Jenkins CI
+
+2016-01-15  Vinzenz Feenstra  <vfeenstr@redhat.com>
+
+	virt: Correct epoll unregistration usage in vmchannels
+	Previously we have been unregistering fds from epoll but not in the correct
+	way. Which has led to log messages which seemed to have no good explanation
+	as of why they occur. That has been changed to 'fix' it by letting only epoll
+	unregister those file descriptors themselves when they are closed.
+	This however has been wrong - the correct procedure to use epoll is to
+	unregister the file descriptor first and then close the socket.
+
+	In the vmchannel case there are two scenarios where this applies:
+
+	- On an error reported by epoll
+	- When we want to unregister the channel from vmchannels
+
+	This patch fixes those two scenarios.
+
+	Backport-To: 3.5
+	Backport-To: 3.6
+	Bug-Url: https://bugzilla.redhat.com/1226911
+	Continuous-Integration: Nir Soffer <nsoffer@redhat.com>
+	Continuous-Integration: Jenkins CI
+
+	virt: Set cloexec flag on channel sockets
+	To counter act potential leakage of open handles, this patch is setting the
+	CLOEXEC flag on the sockets used for the guest agent channels.
+	It is known that this is not totally race free however it will still improve
+	the number of file handles leaked.
+
+	Bug-Url: https://bugzilla.redhat.com/1226911
+	Continuous-Integration: Jenkins CI
+
 2016-01-11  Allon Mureinik  <amureini@redhat.com>
 
 	spec: require libvirt to fix hotplugging
@@ -4421,8 +5129,6 @@
 
 	Continuous-Integration: Jenkins CI
 
-2015-07-28  Nir Soffer  <nsoffer@redhat.com>
-
 	mount: Implement __ne__
 	"""
 	There are no implied relationships among the comparison operators. The
@@ -4562,7 +5268,7 @@
 
 	Continuous-Integration: Jenkins CI
 
-2015-07-24  Yeela Kaplan  <ykaplan@redhat.com>
+2015-07-25  Yeela Kaplan  <ykaplan@redhat.com>
 
 	vdscli: jsonrpc: add a creation method for client
 	Allow connecting to vdscli either with an existing
@@ -4572,7 +5278,7 @@
 	Bug-Url: https://bugzilla.redhat.com/show_bug.cgi?id=1138381
 	Continuous-Integration: Jenkins CI
 
-2015-07-24  Shmuel Melamud  <smelamud@redhat.com>
+2015-07-25  Shmuel Melamud  <smelamud@redhat.com>
 
 	api: 'device' property for RNG device
 	Added 'device' property for RNG devices as VDSM relies on presence of
@@ -4581,7 +5287,7 @@
 	Bug-Url: https://bugzilla.redhat.com/show_bug.cgi?id=1233825
 	Continuous-Integration: Jenkins CI
 
-2015-07-24  Nir Soffer  <nsoffer@redhat.com>
+2015-07-25  Nir Soffer  <nsoffer@redhat.com>
 
 	multipath: Replace timing code with utils.stopwatch
 	The old timing code was longer then the code it measured, and it was
@@ -4591,7 +5297,7 @@
 
 	Continuous-Integration: Jenkins CI
 
-2015-07-24  pkliczewski  <piotr.kliczewski@gmail.com>
+2015-07-25  pkliczewski  <piotr.kliczewski@gmail.com>
 
 	stomp: standalone client
 	Convenience method to create stomp client by providing information
@@ -5083,7 +5789,7 @@
 
 	Continuous-Integration: Jenkins CI
 
-2015-07-17  Francesco Romani  <fromani@redhat.com>
+2015-07-18  Francesco Romani  <fromani@redhat.com>
 
 	vm: events: do not override Down status
 	We want to reuse Vm._getVmStatus() in the events notification
@@ -5143,6 +5849,8 @@
 	more useful data back to Engine.
 
 	Continuous-Integration: Jenkins CI
+
+2015-07-17  Francesco Romani  <fromani@redhat.com>
 
 	vm: event: emit event on domDependentInit
 	When Vm.domDependentInit() terminates, the VM
@@ -5633,7 +6341,7 @@
 
 	Continuous-Integration: Dan Kenigsberg <danken@redhat.com>
 
-2015-07-07  Adam Litke  <alitke@redhat.com>
+2015-07-08  Adam Litke  <alitke@redhat.com>
 
 	StorageDomainManifest: move BlockSD.getVSize
 	getVSize is one of the first functions needed by the VolumeMetadata
@@ -5677,7 +6385,7 @@
 
 	Continuous-Integration: Jenkins CI
 
-2015-07-07  Nir Soffer  <nsoffer@redhat.com>
+2015-07-08  Nir Soffer  <nsoffer@redhat.com>
 
 	password: Allow pickling of protected password
 	In commit 862d6440176c (password: Prevent password logging and
@@ -5707,7 +6415,7 @@
 
 	Continuous-Integration: Jenkins CI
 
-2015-07-07  Candace Sheremeta  <cshereme@redhat.com>
+2015-07-08  Candace Sheremeta  <cshereme@redhat.com>
 
 	vdsm: removed optional markers for volUUID
 	after examining the code, it's clear that the volUUID parameter
@@ -5936,7 +6644,7 @@
 
 	Continuous-Integration: Jenkins CI
 
-2015-07-02  Nir Soffer  <nsoffer@redhat.com>
+2015-07-03  Nir Soffer  <nsoffer@redhat.com>
 
 	tests: Allow setting custom libvirt error message
 	Fake Domain object was repeating the code in Error factory, and was
@@ -6124,7 +6832,7 @@
 	Bug-Url: https://bugzilla.redhat.com/show_bug.cgi?id=1225831
 	Continuous-Integration: Jenkins CI
 
-2015-06-30  Yaniv Bronhaim  <ybronhei@redhat.com>
+2015-07-01  Yaniv Bronhaim  <ybronhei@redhat.com>
 
 	Vdsm does not require tun device any more
 	For many many years 6a915816, vdsm no longer creates tap devices directly,
@@ -7446,7 +8154,7 @@
 	Bug-Url: https://bugzilla.redhat.com/show_bug.cgi?id=1227781
 	Continuous-Integration: Jenkins CI
 
-2015-06-12  Martin Polednik  <mpolednik@redhat.com>
+2015-06-13  Martin Polednik  <mpolednik@redhat.com>
 
 	hostdev: add support for usb devices
 	In order to support USB passthrough, we only have to pass usb hostdev
@@ -7455,7 +8163,7 @@
 
 	Continuous-Integration: Jenkins CI
 
-2015-06-12  Adam Litke  <alitke@redhat.com>
+2015-06-13  Adam Litke  <alitke@redhat.com>
 
 	tests: Fix writing of logBlkSize property
 	This recent patch[1] changed FakeBlockStorageDomain so that we would not
@@ -7807,8 +8515,6 @@
 	restored vfs.
 
 	Continuous-Integration: Jenkins CI
-
-2015-06-08  Ido Barkan  <ibarkan@redhat.com>
 
 	net: bondingOptions should not be a part of runningConfig networks
 	Since all attributes of _addNetwork are copied as a flat dictionary
@@ -8275,8 +8981,6 @@
 	Bug-Url: https://bugzilla.redhat.com/1141422
 	Continuous-Integration: Jenkins CI
 
-2015-05-29  Francesco Romani  <fromani@redhat.com>
-
 	tests: sampling: more careful elapsedTime check
 	When checking HostMonitor.get() with empty samples
 	on a slow host, it is possible that elapsedTime will be
@@ -8608,7 +9312,7 @@
 
 	Continuous-Integration: Jenkins CI
 
-2015-05-24  Dan Kenigsberg  <danken@redhat.com>
+2015-05-25  Dan Kenigsberg  <danken@redhat.com>
 
 	net tests: skip test_setupNetworks_on_external_bond
 	commit f80e6162f introduced test_setupNetworks_on_external_bond that
@@ -8623,7 +9327,7 @@
 	Bug-Url: https://bugzilla.redhat.com/1223457
 	Continuous-Integration: Jenkins CI
 
-2015-05-24  Petr Horáček  <phoracek@redhat.com>
+2015-05-25  Petr Horáček  <phoracek@redhat.com>
 
 	network/models: check unified persistence only when it exists
 	commit 73bbb27cb is re-configuring a bond if does not exist in
@@ -8633,7 +9337,7 @@
 	Bug-Url: https://bugzilla.redhat.com/1223457
 	Continuous-Integration: Jenkins CI
 
-2015-05-24  Nir Soffer  <nsoffer@redhat.com>
+2015-05-25  Nir Soffer  <nsoffer@redhat.com>
 
 	fileUtils: Fix bug when mode is not specified
 	We used to modify the directory bit on the mode parameter, which is
@@ -8653,6 +9357,8 @@
 	OSError with ENOTDIR errno in this case.
 
 	Continuous-Integration: Jenkins CI
+
+2015-05-24  Nir Soffer  <nsoffer@redhat.com>
 
 	tests: Wait until bridge is down before deleting it
 	Previous code was using evil time.sleep(0.5), which tends to break on our
@@ -9455,8 +10161,6 @@
 	network: factor out method from unified restoration logic.
 	Continuous-Integration: Dan Kenigsberg <danken@redhat.com>
 
-2015-05-07  Ido Barkan  <ibarkan@redhat.com>
-
 	net: remove el6 support for libnl binding
 	Since 3.6 does not support el6 this commit reverts 2 other commits:
 	02ab984 vdsm: Fix memory leak in netlink/link.py
@@ -9518,7 +10222,7 @@
 	provide their progress during execution: their output must be processed
 	as soon as possible to maintain and report status updates.
 
-2015-05-05  Francesco Romani  <fromani@redhat.com>
+2015-05-06  Francesco Romani  <fromani@redhat.com>
 
 	sampling: statscache: more robust remove()
 	It is possible that StatsCache.remove() is called for a VM
@@ -9741,7 +10445,7 @@
 	udevadm is a handy tool that other parts of vdsm could use beside
 	storage.
 
-2015-04-29  Dan Kenigsberg  <danken@redhat.com>
+2015-04-30  Dan Kenigsberg  <danken@redhat.com>
 
 	unbreak pyflakes
 	Patch https://gerrit.ovirt.org/40346 did not maintain pyflakes
@@ -11022,11 +11726,11 @@
 
 	Bug-Url: https://bugzilla.redhat.com/show_bug.cgi?id=1199217
 
-2015-04-09  Nir Soffer  <nsoffer@redhat.com>
+2015-04-10  Nir Soffer  <nsoffer@redhat.com>
 
 	vdsm-tool: Sort imports
 
-2015-04-08  Ala Hino  <ahino@redhat.com>
+2015-04-09  Ala Hino  <ahino@redhat.com>
 
 	udevadm: Handle errors and timeouts in udevadm.settle()
 	In commit 4c10d3d10c (multipath: Wait for udev events after rescan) we started
@@ -11431,7 +12135,7 @@
 	Fixed arguments name in apiwrapper and vdsmapi-gluster-schema
 	for geo-replication status verb.
 
-2015-03-28  Nir Soffer  <nsoffer@redhat.com>
+2015-03-29  Nir Soffer  <nsoffer@redhat.com>
 
 	udevadm: Add udevadm wrapper
 	Add udevadm wrapper for running udevadm tool. In the current version the
@@ -13205,8 +13909,6 @@
 
 	dummy: unify parameter 'dummy_name' naming with a variable name already used
 
-2015-02-14  Ondřej Svoboda  <osvoboda@redhat.com>
-
 	networkTests: delete our lease files also on EL6
 	EL6's initscripts name them with one less dash and the extension *.leases,
 	unlike recent ones (*.lease). (Inside the two dashes there may be a UUID if
@@ -14307,7 +15009,7 @@
 	to a more efficient XML processing to offer some short-term
 	quick help.
 
-2015-01-21  Ido Barkan  <ibarkan@redhat.com>
+2015-01-22  Ido Barkan  <ibarkan@redhat.com>
 
 	disconnect bridge port on rhel 6
 	This fixes a bug introduced in d6d7db4ca24606d35acafe6e92b1ee031c0c8fe1
@@ -14595,8 +15297,6 @@
 	argument to assertXMLEqual was removed, and tests that used it are using
 	now the new find(xml, match) helper for extracting the needed fragment.
 
-2015-01-16  Nir Soffer  <nsoffer@redhat.com>
-
 	tests: Move assertXMLEqual to testlib [2/4]
 	This patch changes the the element argument to xml string, so the
 	funcion is not tied to xml.dom.minidom.
@@ -14635,6 +15335,8 @@
 	        <serial>54-a672-23e5b495a9ea</serial>
 	        <driver cache="none" error_policy="stop" io="native" name="qemu" type="raw" />
 	    </disk>
+
+2015-01-16  Nir Soffer  <nsoffer@redhat.com>
 
 	tests: Cleanup getAllVolumes tests for block storage
 	The old tests had few issues:
@@ -15278,7 +15980,7 @@
 	qemu-img: Allow creation of zero-sized volumes
 	In previous version if size is zero it was omitted from the command
 
-2014-12-28  Shahar Havivi  <shaharh@redhat.com>
+2014-12-29  Shahar Havivi  <shaharh@redhat.com>
 
 	v2v: adding os support version for v2v
 	as well as fixing for broken test in el6.
@@ -15302,7 +16004,7 @@
 
 	Bug-Url: https://bugzilla.redhat.com/1173929
 
-2014-12-23  Yeela Kaplan  <ykaplan@redhat.com>
+2014-12-24  Yeela Kaplan  <ykaplan@redhat.com>
 
 	oopTests: Use monkeypatch for changing idle time
 
@@ -15397,7 +16099,7 @@
 	Bug-Url: https://bugzilla.redhat.com/show_bug.cgi?id=867922
 	Bug-Url: https://bugzilla.redhat.com/show_bug.cgi?id=870734
 
-2014-12-22  ibarkan  <ibarkan@redhat.com>
+2014-12-23  ibarkan  <ibarkan@redhat.com>
 
 	There is no need to decorate all tests with RequireDummyMod
 	This is since setupModule already needs the dummy module to be loaded in order
@@ -15514,7 +16216,7 @@
 	Adding dummy links. So even tests that are not decorated with
 	ValidateRunningAsRoot actually require root previliges.
 
-2014-12-16  Nir Soffer  <nsoffer@redhat.com>
+2014-12-17  Nir Soffer  <nsoffer@redhat.com>
 
 	storageServer: Improve iscsi connection logging
 	We have several bugs where iscsi storage connection are not disconnected
@@ -16065,13 +16767,13 @@
 	It is usually difficult to know which test originated the
 	setupNetworks calls in the logs. This patch makes it easier to debug
 
-2014-12-03  Martin Sivak  <msivak@redhat.com>
+2014-12-04  Martin Sivak  <msivak@redhat.com>
 
 	Add the missing --enable-rhev definition to configure.ac
 	This fixes an error reported by autogen.sh when
 	--enable-rhev was on the command line.
 
-2014-12-03  Martin Sivak  <mars@montik.net>
+2014-12-04  Martin Sivak  <mars@montik.net>
 
 	Restore the default value of rhev_build in the spec file
 
@@ -16626,11 +17328,11 @@
 
 	Bug-Url: https://bugzilla.redhat.com/show_bug.cgi?id=1164215
 
-2014-11-19  ibarkan  <ibarkan@redhat.com>
+2014-11-20  ibarkan  <ibarkan@redhat.com>
 
 	make isVDSMInterface and it's helpers static
 
-2014-11-19  Petr Horáček  <phoracek@redhat.com>
+2014-11-20  Petr Horáček  <phoracek@redhat.com>
 
 	libnl: make link cache optional for link/route/addr_info
 
@@ -16808,7 +17510,7 @@
 	    in locked region) we need more precise instrumentation
 	    anyway.
 
-2014-11-17  Sandro Bonazzola  <sbonazzo@redhat.com>
+2014-11-18  Sandro Bonazzola  <sbonazzo@redhat.com>
 
 	pep8: fix pep8 on generated vdsm.py
 
@@ -18940,7 +19642,7 @@
 	integration of addNetwork/delNetwork with tc to implement the QoS
 	flow.
 
-2014-09-14  Dan Kenigsberg  <danken@redhat.com>
+2014-09-15  Dan Kenigsberg  <danken@redhat.com>
 
 	fix typo introduced by Ie8140fe1
 
@@ -19757,11 +20459,13 @@
 	To avoid that, a new simple method is added to request clean
 	shutdown of a VM through ACPI events.
 
-2014-08-21  Nir Soffer  <nsoffer@redhat.com>
+2014-08-22  Nir Soffer  <nsoffer@redhat.com>
 
 	tests: Fix Python 2.6 compatibility
 	Recent tests use set comprehension which is available only in Python
 	2.7, failing builds on EL machines.
+
+2014-08-21  Nir Soffer  <nsoffer@redhat.com>
 
 	tool: Fix help message when is-configured fails
 	When is-configured fails for some modules, the help message suggested an
@@ -20031,7 +20735,7 @@
 
 	Bug-Url: https://bugzilla.redhat.com/1096312
 
-2014-08-14  Nir Soffer  <nsoffer@redhat.com>
+2014-08-15  Nir Soffer  <nsoffer@redhat.com>
 
 	tests: Fix rare deadlock in profile threads tests
 	There is a rare deadlock in yappi profiler, when starting a profile in
@@ -20359,7 +21063,7 @@
 	the testing threads would block instead of failing the tests. This code
 	uses now an AssertingLock instead.
 
-2014-08-09  Antoni S. Puimedon  <asegurap@redhat.com>
+2014-08-10  Antoni S. Puimedon  <asegurap@redhat.com>
 
 	tc: add qdisc parsing for some hfsc, ingress, pfifo_fast, etc
 	This patch adds qdisc parsing capabilities to vdsm/network/tc.py which
@@ -20399,7 +21103,7 @@
 	Note that there is some basic information reported for unsupported
 	qdisc classes (like tbf and drr).
 
-2014-08-09  Petr Horáček  <phoracek@redhat.com>
+2014-08-10  Petr Horáček  <phoracek@redhat.com>
 
 	networkTests: assertBridgeDoesntExist added
 	New assert added, i need it in a following patch:
@@ -20569,7 +21273,7 @@
 
 	Bug-Url: https://bugzilla.redhat.com/show_bug.cgi?id=1121494
 
-2014-08-01  Antoni S. Puimedon  <asegurap@redhat.com>
+2014-08-02  Antoni S. Puimedon  <asegurap@redhat.com>
 
 	net_configurators: Fix optional configurator importing
 	With the arrival of the first truly optional (its dependencies do not
@@ -20657,7 +21361,7 @@
 
 	This patch adds an explicit deprecation reminder.
 
-2014-07-31  Antoni S. Puimedon  <asegurap@redhat.com>
+2014-08-01  Antoni S. Puimedon  <asegurap@redhat.com>
 
 	ipwrapper: remove Link cli parser
 	Nowadays we only use the Link object creation from dictionary (in
@@ -20817,7 +21521,7 @@
 	waiting for anything.
 	No functional changes.
 
-2014-07-28  Dan Kenigsberg  <danken@redhat.com>
+2014-07-29  Dan Kenigsberg  <danken@redhat.com>
 
 	API.updateTimestamp: use touchFile
 	Opening a file for writing with the file() constructor is frowned upon.
@@ -21055,7 +21759,7 @@
 	volumeTests: add BlockDomainMetadataSlotTest
 	A new test has been added to check the metadata slot selection.
 
-2014-07-16  Francesco Romani  <fromani@redhat.com>
+2014-07-17  Francesco Romani  <fromani@redhat.com>
 
 	vm: make _isDomainRunning more robust
 	The Vm._dom atrribute may be set to None
@@ -21064,7 +21768,7 @@
 	This patch makes sure that the
 	Vm._isDomainRunning method can cope with this fact.
 
-2014-07-16  Vinzenz Feenstra  <vfeenstr@redhat.com>
+2014-07-17  Vinzenz Feenstra  <vfeenstr@redhat.com>
 
 	Degrading epoll errors in vmchannels to log level INFO
 	Error events from epoll are quite common due to lost connections
@@ -21073,7 +21777,7 @@
 
 	Bug-Url: https://bugzilla.redhat.com/1102549
 
-2014-07-16  Francesco Romani  <fromani@redhat.com>
+2014-07-17  Francesco Romani  <fromani@redhat.com>
 
 	vm: use vmxml.Element in snapshot method
 	Use vmxml.Element instead of xml.dom.minidom.Element
@@ -21084,6 +21788,8 @@
 	Use vmxml.Element instead of xml.dom.minidom.Element
 	in vm.setLinkAndNetwork.
 	No functional changes.
+
+2014-07-16  Francesco Romani  <fromani@redhat.com>
 
 	vm: replace minidom.Element for memory snapshots
 	The _memorySnapshot method used to manipulate directly
@@ -21189,7 +21895,7 @@
 
 	Bug-Url: https://bugzilla.redhat.com/1115104
 
-2014-07-13  Nir Soffer  <nsoffer@redhat.com>
+2014-07-14  Nir Soffer  <nsoffer@redhat.com>
 
 	mailbox: Fix unsafe locking
 	In setMaxHostID, both _inLock and _outLock are acquired and released in
@@ -21417,7 +22123,7 @@
 
 	Bug-Url: https://bugzilla.redhat.com/show_bug.cgi?id=1114968
 
-2014-07-08  Dan Kenigsberg  <danken@redhat.com>
+2014-07-09  Dan Kenigsberg  <danken@redhat.com>
 
 	connectivty log: more readable changes
 	Before this patch, the name of a new interface, as well as the name of
@@ -23067,13 +23773,13 @@
 	Protocol detection added which only recognize xmlrpc and there is still
 	additional socket to handle jsonrpc related communication.
 
-2014-06-10  Antoni S. Puimedon  <asegurap@redhat.com>
+2014-06-11  Antoni S. Puimedon  <asegurap@redhat.com>
 
 	iproute2: raise ConfigNetworkError when dhcp fails and blockingdhcp is set
 	It is important that a ConfigNetworkError exception is raised when
 	doing the addressing synchronously, otherwise it fails silently.
 
-2014-06-10  Ondřej Svoboda  <osvoboda@redhat.com>
+2014-06-11  Ondřej Svoboda  <osvoboda@redhat.com>
 
 	netinfo: Hacked InfiniBand speed.
 	Currently, the kernel errors out with EINVAL when
@@ -23084,14 +23790,14 @@
 
 	Bug-Url: https://bugzilla.redhat.com/1103469
 
-2014-06-10  Nir Soffer  <nsoffer@redhat.com>
+2014-06-11  Nir Soffer  <nsoffer@redhat.com>
 
 	logging: Use 'Storage' log handler for logging storage reports
 	This patch enables 23 storage loggers by making them child loggers of the
 	Storage logger. Before that change all those logs were used the root
 	handler.
 
-2014-06-10  pkliczewski  <piotr.kliczewski@gmail.com>
+2014-06-11  pkliczewski  <piotr.kliczewski@gmail.com>
 
 	jsonrpc: ssl related code moved to single module
 	New sslutils module was created to keep all ssl related code.
@@ -23122,7 +23828,7 @@
 	Json over tcp reactor is not needed at all and proton reactor won't be
 	released in 3.5.
 
-2014-06-10  Adam Litke  <alitke@redhat.com>
+2014-06-11  Adam Litke  <alitke@redhat.com>
 
 	virt: Filter internal data for getVMList API
 	Filter out all keys that begin with '_' when returning detailed VM
@@ -23633,7 +24339,7 @@
 
 	Relates-To: https://bugzilla.redhat.com/show_bug.cgi?id=1100527
 
-2014-05-29  Liron Aravot  <laravot@redhat.com>
+2014-05-30  Liron Aravot  <laravot@redhat.com>
 
 	BindingXmlRPC - do_PUT to return created task id in header
 	Currently the execution result of "download" to image is being returned
@@ -24198,7 +24904,7 @@
 	size, but since nothing uses this code but the tests itself we can
 	simply remove it.
 
-2014-05-20  Adam Litke  <alitke@redhat.com>
+2014-05-21  Adam Litke  <alitke@redhat.com>
 
 	LiveMerge: Remove old merge APIs
 	The old merge and mergeStatus APIs were never adopted and in order to
@@ -24338,7 +25044,7 @@
 	so a VM created with a single new style graphic device can be
 	migrated to old VDSMs without breaking cluster compatibility.
 
-2014-05-17  Nir Soffer  <nsoffer@redhat.com>
+2014-05-18  Nir Soffer  <nsoffer@redhat.com>
 
 	utils: Cleanup command logging
 	A new dictionary was created for selecting the "SUCCESS" or "FAILED"
@@ -24989,7 +25695,7 @@
 	Vm.conf devices data and puts it into a separate
 	method to make the code a bit more clear.
 
-2014-05-06  Federico Simoncelli  <fsimonce@redhat.com>
+2014-05-07  Federico Simoncelli  <fsimonce@redhat.com>
 
 	image: remove unused storage_repository attribute
 
@@ -25419,13 +26125,13 @@
 	is strictly tied to the vdsm process and it doesn't involve any storage
 	modification that requires a rollback (or rollforward).
 
-2014-04-22  Federico Simoncelli  <fsimonce@redhat.com>
+2014-04-23  Federico Simoncelli  <fsimonce@redhat.com>
 
 	qemuimg: use deathSignal when using execCmd
 	Adding the deathSignal parameter to the qemu-img commands ensures that
 	we won't leave pending processes after vdsm death.
 
-2014-04-22  Francesco Romani  <fromani@redhat.com>
+2014-04-23  Francesco Romani  <fromani@redhat.com>
 
 	pep8: fix pep8 1.5.4/1.5.5
 	pep8 1.5.4/1.5.5 is even more strict than pep8 1.5.1.
@@ -25586,7 +26292,7 @@
 
 	Bug-Url: https://bugzilla.redhat.com/1069303
 
-2014-04-16  Francesco Romani  <fromani@redhat.com>
+2014-04-17  Francesco Romani  <fromani@redhat.com>
 
 	gluster: use the any() builtin
 	use
@@ -25681,9 +26387,11 @@
 	    <mouse mode='client'/>
 	  </graphics>
 
-2014-04-10  Antoni S. Puimedon  <asegurap@redhat.com>
+2014-04-11  Antoni S. Puimedon  <asegurap@redhat.com>
 
 	rpmspec: Drop Fedora <19 special cases
+
+2014-04-10  Antoni S. Puimedon  <asegurap@redhat.com>
 
 	netlink: Re-order 1.public, 2.private, 3.complex
 	Reorder the module parts according with
@@ -25849,7 +26557,7 @@
 	pep8: virt cleanups for pep8-1.5
 	virt is now pep8-1.5 clean
 
-2014-04-01  Donn Seeley  <donn.seeley@windriver.com>
+2014-04-02  Donn Seeley  <donn.seeley@windriver.com>
 
 	vds-tool: keep env on sysV service
 	Update env when SYSTEMCTL_SKIP_REDIRECT is set instead of dropping
@@ -25857,7 +26565,7 @@
 
 	Bug-Url: https://bugzilla.redhat.com/show_bug.cgi?id=1081621
 
-2014-04-01  Dan Kenigsberg  <danken@redhat.com>
+2014-04-02  Dan Kenigsberg  <danken@redhat.com>
 
 	pep8: make pep8-1.5 happy with E241
 
@@ -26460,9 +27168,11 @@
 	The tests were splitted from the former functional fix in order to
 	expedite the merge of the latter one.
 
-2014-02-28  Antoni S. Puimedon  <asegurap@redhat.com>
+2014-03-01  Antoni S. Puimedon  <asegurap@redhat.com>
 
 	netinfo: remove code duplication between nics, bridges, bonds and vlans
+
+2014-02-28  Antoni S. Puimedon  <asegurap@redhat.com>
 
 	netinfo: pass _netinfo to addNetwork
 	Bug-Url: https://bugzilla.redhat.com/1053114
@@ -27049,7 +27759,7 @@
 	Tests prepareVolumePath for cdrom by verifying that path and
 	specParams['path'] and vmPayload works as expected.
 
-2014-02-13  Michal Skrivanek  <michal.skrivanek@redhat.com>
+2014-02-14  Michal Skrivanek  <michal.skrivanek@redhat.com>
 
 	typo in guest agent channel timeout handling
 
@@ -27135,19 +27845,19 @@
 	class, so if one of them will override parse_request, we use the correct
 	method.
 
-2014-02-11  Vitor de Lima  <vitor.lima@eldorado.org.br>
+2014-02-12  Vitor de Lima  <vitor.lima@eldorado.org.br>
 
 	vm.py: Fix unsupported HPET option in ppc64
 	This patch does not allow disabling HPET in ppc64, since the -no-hpet
 	option is missing in the ppc64 QEMU.
 
-2014-02-11  Francesco Romani  <fromani@redhat.com>
+2014-02-12  Francesco Romani  <fromani@redhat.com>
 
 	tests: add initial tests for timeOffset handling
 	the handling of timeOffset has been a source of issues
 	recently and deserves more testing.
 
-2014-02-11  Greg Padgett  <gpadgett@redhat.com>
+2014-02-12  Greg Padgett  <gpadgett@redhat.com>
 
 	API: setHaMaintenanceMode command
 	New API for setting hosted engine maintenance mode.  This allows the
@@ -27487,7 +28197,7 @@
 
 	Bug-Url: https://bugzilla.redhat.com/show_bug.cgi?id=889097
 
-2014-02-03  Dan Kenigsberg  <danken@redhat.com>
+2014-02-04  Dan Kenigsberg  <danken@redhat.com>
 
 	pep8: fix damage introduced in 0bc1e2
 
@@ -28091,7 +28801,7 @@
 	misses this flag, it forces the the cluster level at
 	no more than version 3.3.
 
-2014-01-16  Peter V. Saveliev  <peet@redhat.com>
+2014-01-17  Peter V. Saveliev  <peet@redhat.com>
 
 	remove redundant libvirt call
 	Checking UUIDString() adresses the bug #603494, which
@@ -28824,7 +29534,7 @@
 
 	sourceRouteThread: log unhandled exceptions
 
-2014-01-02  Maor Lipchuk  <mlipchuk@redhat.com>
+2014-01-03  Maor Lipchuk  <mlipchuk@redhat.com>
 
 	clientIF: Log unhandled exception for new Thread
 	Adding a traceback log for unhandled exceptions, when openning a new thread, so
@@ -31755,7 +32465,7 @@
 	has no instances, so it is better to drop it altogether in favor
 	or VmDevice, which is inherited from a sizeable amount of times.
 
-2013-10-04  Timothy Asir  <tjeyasin@redhat.com>
+2013-10-05  Timothy Asir  <tjeyasin@redhat.com>
 
 	gluster: fix integer overflow error in rebalance status
 	Provides rebalance status values as strings to avoid overflow error
@@ -32125,7 +32835,7 @@
 	        'status': STRING
 	    }]}
 
-2013-09-19  Juan Hernandez  <juan.hernandez@redhat.com>
+2013-09-20  Juan Hernandez  <juan.hernandez@redhat.com>
 
 	Log client address on SSL errors
 	We used to write to the log the IP address of the client when an SSL
@@ -32501,11 +33211,11 @@
 
 	Nits: clean the magic number for seek()
 
-2013-09-11  Federico Simoncelli  <fsimonce@redhat.com>
+2013-09-12  Federico Simoncelli  <fsimonce@redhat.com>
 
 	vdsm-tool: handle missing sanlock pid file
 
-2013-09-11  Zhou Zheng Sheng  <zhshzhou@linux.vnet.ibm.com>
+2013-09-12  Zhou Zheng Sheng  <zhshzhou@linux.vnet.ibm.com>
 
 	Packaging: make libvirtd env file path and qemu process user group configurable
 	In Ubuntu, qemu user is libvirt-qemu, qemu group is kvm. libvirt daemon
@@ -32620,7 +33330,7 @@
 	scripts that are effected will not be regenerated unless make clean is
 	called, out of the scope of this patch.
 
-2013-09-06  Alon Bar-Lev  <alonbl@redhat.com>
+2013-09-07  Alon Bar-Lev  <alonbl@redhat.com>
 
 	build: cleanup: reformat use of AC_ARG_ENABLE
 	1. Use AS_HELP_STRING to format help.
@@ -32866,13 +33576,13 @@
 
 	Bug-Url: https://bugzilla.redhat.com/987525
 
-2013-08-24  Martin Polednik  <mpoledni@redhat.com>
+2013-08-25  Martin Polednik  <mpoledni@redhat.com>
 
 	xmlrpcTests: refactoring
 	- split xmlrpcTests into storageTests and virtTests to reduce complexity
 	- use vdsProxy approach for virtTests part
 
-2013-08-23  Antoni S. Puimedon  <asegurap@redhat.com>
+2013-08-24  Antoni S. Puimedon  <asegurap@redhat.com>
 
 	fix getVlanID returning an int issues
 	The fact that getVlanId now returns an int causes issues across
@@ -33018,11 +33728,11 @@
 	test to use it instead of direct calling. It resembles the way network
 	functional test uses.
 
-2013-08-19  Amador Pahim  <apahim@redhat.com>
+2013-08-20  Amador Pahim  <apahim@redhat.com>
 
 	Introducing hidden_vlans configurable.
 
-2013-08-19  Giuseppe Vallarelli  <gvallare@redhat.com>
+2013-08-20  Giuseppe Vallarelli  <gvallare@redhat.com>
 
 	tests: setupNetworks add net bond breaking and resizing.
 	Added 3 functional tests to cover cases of new networks
@@ -36544,7 +37254,7 @@
 	Patch Sets 2-5:
 	Styling, naming.
 
-2013-04-06  Yeela Kaplan  <ykaplan@redhat.com>
+2013-04-07  Yeela Kaplan  <ykaplan@redhat.com>
 
 	sp: invalidate lvm cache if attachSD fails
 	Bug-Url: https://bugzilla.redhat.com/show_bug.cgi?id=883390
@@ -38465,7 +39175,7 @@
 
 	Fix the rest of vdsm storage pep8 issues.
 
-2013-01-10  Deepak C Shetty  <deepakcs@linux.vnet.ibm.com>
+2013-01-11  Deepak C Shetty  <deepakcs@linux.vnet.ibm.com>
 
 	Move gluster/{cli,exception,hostname,__init__}.py to vdsm rpm
 	This move is being done so that vdsm code using gluster cli
@@ -38561,7 +39271,7 @@
 
 	spec: fix typo in the numa hook summary
 
-2013-01-01  Maor Lipchuk  <mlipchuk@redhat.com>
+2013-01-02  Maor Lipchuk  <mlipchuk@redhat.com>
 
 	VDSM: Fix VDSM error message.
 	Rephrase VDSM error message.
@@ -40561,7 +41271,7 @@
 	sos/vdsm.py: Add vdsm-reg dir
 	Collect file(s) from /etc/vdsm-reg
 
-2012-10-23  Antoni S. Puimedon  <asegurap@redhat.com>
+2012-10-24  Antoni S. Puimedon  <asegurap@redhat.com>
 
 	Make netinfoTests follow closely python guidelines.
 	Change 'file' by 'open' and use a with block not to wait for gc.
@@ -40643,7 +41353,7 @@
 
 	Bug-Url: https://bugzilla.redhat.com/show_bug.cgi?id=865384
 
-2012-10-19  Saggi Mizrahi  <smizrahi@redhat.com>
+2012-10-20  Saggi Mizrahi  <smizrahi@redhat.com>
 
 	Fix some pep8 errors in storageServer.py
 	This doesn't make it 100% compliant because it's just irrelevant changes
@@ -40982,7 +41692,7 @@
 
 	Bug-Url: https://bugzilla.redhat.com/show_bug.cgi?id=851146
 
-2012-10-06  Eduardo Warszawski  <ewarszaw@redhat.com>
+2012-10-07  Eduardo Warszawski  <ewarszaw@redhat.com>
 
 	Remove unused image.preDeleteHandler().
 	Dead code remove.
@@ -42149,7 +42859,7 @@
 
 	Add a basic xmlrpc functional test
 
-2012-08-30  ShaoHe Feng  <shaohef@linux.vnet.ibm.com>
+2012-08-31  ShaoHe Feng  <shaohef@linux.vnet.ibm.com>
 
 	fix TypeError of _eqSplit in vdsClient.py
 	if the arg is string 'xyz', the _eqSplit will into the 'else'
@@ -42420,7 +43130,7 @@
 
 	BZ#846004 - IP on nic/bond should be preserved when VLAN added
 
-2012-08-22  Federico Simoncelli  <fsimonce@redhat.com>
+2012-08-23  Federico Simoncelli  <fsimonce@redhat.com>
 
 	BZ#833084 Set StoragePool.id to SPM_ID_FREE by default
 	Setting the storage pool id to SPM_ID_FREE (-1) would prevent mistakes
@@ -42738,7 +43448,7 @@
 
 	3. Sync file name and content format.
 
-2012-08-14  Amador Pahim  <apahim@redhat.com>
+2012-08-15  Amador Pahim  <apahim@redhat.com>
 
 	BZ#846604 bootstrap: skip clock sync if ntpd is synced
 	During boostrap, host clock is synchronised with
@@ -43503,7 +44213,7 @@
 	from libvirt.
 	adding handling EINTR to poll to make it more robust
 
-2012-07-19  Igor Lvovsky  <ilvovsky@redhat.com>
+2012-07-20  Igor Lvovsky  <ilvovsky@redhat.com>
 
 	Split getNetworksAndVlansForBonding to handle bridge and bridgeless networks
 
@@ -43641,7 +44351,7 @@
 	test, they would never have been read in a second test of the same nose
 	run.
 
-2012-07-14  Zhou Zheng Sheng  <zhshzhou@linux.vnet.ibm.com>
+2012-07-15  Zhou Zheng Sheng  <zhshzhou@linux.vnet.ibm.com>
 
 	fix the "netinfo" module import problem
 	some files just do "import netinfo", but it should be
@@ -46133,7 +46843,7 @@
 
 	Adding the qemuImg command line
 
-2012-04-17  Douglas Schilling Landgraf  <dougsland@redhat.com>
+2012-04-18  Douglas Schilling Landgraf  <dougsland@redhat.com>
 
 	engine.py: improve password text
 	Replace 'Set oVirt Engine Admin Password'. This text is confusing
@@ -46475,12 +47185,12 @@
 	Revert "added a very very simple test for the function filterXmlChars in the guestIF module"
 	This reverts commit 14e80f5e65cd2d11a00987ba3f8b8e1bc5021107 as it fails common `make`.
 
-2012-03-28  Douglas Schilling Landgraf  <dougsland@redhat.com>
+2012-03-29  Douglas Schilling Landgraf  <dougsland@redhat.com>
 
 	nfs-check: Add except socket.gethostbyname()
 	Avoid exception when cannot resolve localhost.
 
-2012-03-28  Shahar Havivi  <shaharh@redhat.com>
+2012-03-29  Shahar Havivi  <shaharh@redhat.com>
 
 	added support for mirror promisc mode
 	let ability to VM to monitor (mirror) all other VMs in the same host by
@@ -48020,7 +48730,7 @@
 	Add isOvirt() to validate the current hypervisor.
 	Thanks to Mike Burns <mburns AT redhat DOT com> - The original author of these patches.
 
-2011-12-22  Saggi Mizrahi  <smizrahi@redhat.com>
+2011-12-23  Saggi Mizrahi  <smizrahi@redhat.com>
 
 	Refactor mount logic
 
@@ -48508,7 +49218,7 @@
 
 	Fixed reconstruct master
 
-2011-10-28  Eduardo Warszawski  <ewarszaw@redhat.com>
+2011-10-29  Eduardo Warszawski  <ewarszaw@redhat.com>
 
 	Fix missing arg in sp.StoragePool() call.
 	Fix reconstruct master flow.
@@ -48694,13 +49404,13 @@
 
 	BZ#743887 Close lifeline pipe when oop is killed
 
-2011-10-11  Dan Kenigsberg  <danken@redhat.com>
+2011-10-12  Dan Kenigsberg  <danken@redhat.com>
 
 	BZ#744549 getVdsCaps: survive multiple redhat-release rpms
 	caps._getKeyPackages() already handles this case. Too bad this was
 	forgotten in osversion().
 
-2011-10-11  Federico Simoncelli  <fsimonce@redhat.com>
+2011-10-12  Federico Simoncelli  <fsimonce@redhat.com>
 
 	Include vdscli.py in the vdsm rpm
 	Since we moved to kaxmlrpclib we require vdscli in vm.py which is part
@@ -48762,7 +49472,7 @@
 	Delete CA certificate before updating vdsm-reg.conf, to avoid certificate
 	collision in the case of later re-configuration with no fingerprint verification
 
-2011-10-06  Federico Simoncelli  <fsimonce@redhat.com>
+2011-10-07  Federico Simoncelli  <fsimonce@redhat.com>
 
 	BZ#740887 Tune cache dirty ratio
 	Tuning the dirty_ratio and dirty_background_ratio kernel parameters
@@ -48770,7 +49480,7 @@
 	the guests and reduces the ability of a buffered writer to starve
 	guests.
 
-2011-10-06  Igor Lvovsky  <ilvovsky@redhat.com>
+2011-10-07  Igor Lvovsky  <ilvovsky@redhat.com>
 
 	BZ#732765 - Drop disktotal/diskfree parameters for unreachable domains
 
@@ -48798,7 +49508,7 @@
 
 	BZ#736301 - Don't fail lvm.getVGbyUUID() if unreadable VGs found.
 
-2011-10-04  Federico Simoncelli  <fsimonce@redhat.com>
+2011-10-05  Federico Simoncelli  <fsimonce@redhat.com>
 
 	Remove unused TaskResource class
 
@@ -49491,7 +50201,7 @@
 
 	BZ#728874 - vdsm-logrotate shouldn't prints invalid error message
 
-2011-08-16  Federico Simoncelli  <fsimonce@redhat.com>
+2011-08-17  Federico Simoncelli  <fsimonce@redhat.com>
 
 	BZ#730536 Bootstrap should create VDSM_DIR
 	The bootstrap needs to create the VDSM_DIR in order to successfully add
@@ -49615,7 +50325,7 @@
 	The guest CPU state should be updated after the underlying machine is
 	resumed, so that the right value is read from libvirt.
 
-2011-08-03  Federico Simoncelli  <fsimonce@redhat.com>
+2011-08-04  Federico Simoncelli  <fsimonce@redhat.com>
 
 	BZ#723579 AdvancedStatsThread should expose stop()
 	The VmStatsThread wasn't exposing the stop method and therefore
