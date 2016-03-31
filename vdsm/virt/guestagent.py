@@ -28,6 +28,7 @@ import unicodedata
 
 # TODO: in future import from ..
 import supervdsm
+from vdsm.infra import filecontrol
 
 from . import vmstatus
 
@@ -93,6 +94,13 @@ def _filterObject(obj):
     return filt(obj)
 
 
+def _create_socket():
+    sock = socket.socket(socket.AF_UNIX, socket.SOCK_STREAM)
+    filecontrol.set_close_on_exec(sock.fileno())
+    sock.setblocking(0)
+    return sock
+
+
 class MessageState:
     NORMAL = 'normal'
     TOO_BIG = 'too-big'
@@ -114,7 +122,7 @@ class GuestAgent(object):
         self._onStatusChange = onStatusChange
         self.log = log
         self._socketName = socketName
-        self._sock = socket.socket(socket.AF_UNIX, socket.SOCK_STREAM)
+        self._sock = _create_socket()
         self._stopped = True
         self._status = None
         self.guestDiskMapping = {}
@@ -206,8 +214,7 @@ class GuestAgent(object):
     @staticmethod
     def _create(self):
         self._sock.close()
-        self._sock = socket.socket(socket.AF_UNIX, socket.SOCK_STREAM)
-        self._sock.setblocking(0)
+        self._sock = _create_socket()
         return self._sock.fileno()
 
     @staticmethod
@@ -353,7 +360,10 @@ class GuestAgent(object):
 
     def getGuestInfo(self):
         if self.isResponsive():
-            return self.guestInfo
+            # Returning deep copy would be safer but could have performance
+            # implications (e.g. on lists of thousands installed Windows
+            # packages).
+            return self.guestInfo.copy()
         else:
             return {
                 'username': 'Unknown',
@@ -374,8 +384,11 @@ class GuestAgent(object):
         try:
             self.log.debug("desktopLock called")
             self._forward("lock-screen")
-        except:
-            self.log.exception("desktopLock failed")
+        except Exception as e:
+            if isinstance(e, socket.error) and e.args[0] == errno.EBADF:
+                self.log.debug('desktopLock failed - Socket not connected')
+                return  # Expected when not connected/closed socket
+            self.log.exception("desktopLock failed with unexpected exception")
 
     def desktopLogin(self, domain, user, password):
         try:

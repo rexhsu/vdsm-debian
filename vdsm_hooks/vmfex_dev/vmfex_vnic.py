@@ -81,8 +81,10 @@ def createDirectPool(conn):
 def qbhInUse(conn):
     """Returns whether there is already some VM with a 802.1Qbh (most likely to
     be vmfex)."""
-    for vm in conn.listDomainsID():
-        domxml = minidom.parseString(conn.lookupByID(vm).XMLDesc(0))
+    for vmid in conn.listDomainsID():
+        # FIXME: we have to hold a reference to domobj due to rhbz#1305338
+        domobj = conn.lookupByID(vmid)
+        domxml = minidom.parseString(domobj.XMLDesc(0))
         for vport in domxml.getElementsByTagName('virtualport'):
             if vport.getAttribute('type') == '802.1Qbh':
                 return True
@@ -129,6 +131,11 @@ def attachProfileToInterfaceXml(interface, portProfile):
     interface.setAttribute('type', 'network')
 
 
+def removeFilter(interface):
+    for filterElement in interface.getElementsByTagName('filterref'):
+        interface.removeChild(filterElement)
+
+
 def test():
     interface = minidom.parseString("""
     <interface type="bridge">
@@ -147,6 +154,8 @@ def test():
           interface.toprettyxml(encoding='UTF-8'))
 
     attachProfileToInterfaceXml(interface, 'Profail')
+    removeFilter(interface)
+
     print("Interface after attaching to VM-FEX port: %s" %
           interface.toprettyxml(encoding='UTF-8'))
 
@@ -169,6 +178,7 @@ def main():
             doc = hooking.read_domxml()
             interface, = doc.getElementsByTagName('interface')
             attachProfileToInterfaceXml(interface, portProfile)
+            removeFilter(interface)
             hooking.write_domxml(doc)
 
 

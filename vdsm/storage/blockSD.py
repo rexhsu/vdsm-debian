@@ -1031,6 +1031,7 @@ class BlockStorageDomain(sd.StorageDomain):
         If the image is based on a template image it should be expressly
         deactivated.
         """
+        self.removeImageLinks(imgUUID)
         allVols = self.getAllVolumes()
         volUUIDs = self._getImgExclusiveVols(imgUUID, allVols)
         lvm.deactivateLVs(self.sdUUID, volUUIDs)
@@ -1081,6 +1082,12 @@ class BlockStorageDomain(sd.StorageDomain):
                 raise
         return dst
 
+    def unlinkBCImage(self, imgUUID):
+        img_path = self.getLinkBCImagePath(imgUUID)
+        if os.path.islink(img_path):
+            self.log.debug("Removing image directory link %r", img_path)
+            os.unlink(img_path)
+
     def createImageLinks(self, srcImgPath, imgUUID, volUUIDs):
         """
         qcow chain is build by reading each qcow header and reading the path
@@ -1109,6 +1116,15 @@ class BlockStorageDomain(sd.StorageDomain):
                     raise
 
         return imgRunDir
+
+    def removeImageLinks(self, imgUUID):
+        """
+        Remove /run/vdsm/storage/sd_uuid/img_uuid directory, created in
+        createImageLinks.
+
+        Should be called when tearing down an image.
+        """
+        fileUtils.cleanupdir(self.getImageRundir(imgUUID))
 
     def activateVolumes(self, imgUUID, volUUIDs):
         """

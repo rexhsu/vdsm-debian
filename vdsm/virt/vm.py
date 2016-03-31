@@ -269,6 +269,7 @@ class Vm(object):
         self.cif = cif
         self.log = SimpleLogAdapter(self.log, {"vmId": self.conf['vmId']})
         self._destroyed = False
+        self._recoveryLock = threading.Lock()
         self._recoveryFile = constants.P_VDSM_RUN + \
             str(self.conf['vmId']) + '.recovery'
         self._monitorResponse = 0
@@ -815,16 +816,25 @@ class Vm(object):
         return base * (doubler + load) / doubler
 
     def saveState(self):
-        self._saveStateInternal()
+        with self._recoveryLock:
+            if self._recoveryFile is not None:
+                with tempfile.NamedTemporaryFile(dir=constants.P_VDSM_RUN,
+                                                 delete=False) as f:
+                    pickle.dump(self._getVmState(), f)
+
+                os.rename(f.name, self._recoveryFile)
+            else:
+                self.log.debug(
+                    'saveState after cleanup for status=%s destroyed=%s',
+                    self.lastStatus, self._destroyed)
+
         try:
             self._updateDomainDescriptor()
         except Exception:
             # we do not care if _dom suddenly died now
             pass
 
-    def _saveStateInternal(self):
-        if self._destroyed:
-            return
+    def _getVmState(self):
         toSave = self.status()
         toSave['startTime'] = self._startTime
         if self.lastStatus != vmstatus.DOWN:
@@ -849,11 +859,7 @@ class Vm(object):
         toSave['_blockJobs'] = utils.picklecopy(
             self.conf.get('_blockJobs', {}))
 
-        with tempfile.NamedTemporaryFile(dir=constants.P_VDSM_RUN,
-                                         delete=False) as f:
-            pickle.dump(toSave, f)
-
-        os.rename(f.name, self._recoveryFile)
+        return toSave
 
     def onReboot(self):
         try:
@@ -1684,13 +1690,17 @@ class Vm(object):
         self._cleanupDrives()
         self._cleanupFloppy()
         self._cleanupGuestAgent()
-        utils.rmFile(self._recoveryFile)
         cleanup_guest_socket(self._qemuguestSocketFile)
         self._reattachHostDevices()
         self._cleanupStatsCache()
         numaUtils.invalidateNumaCache(self)
         for con in self._devices[hwclass.CONSOLE]:
             con.cleanup()
+
+    def _cleanupRecoveryFile(self):
+        with self._recoveryLock:
+            utils.rmFile(self._recoveryFile)
+            self._recoveryFile = None
 
     def _cleanupStatsCache(self):
         try:
@@ -1891,7 +1901,8 @@ class Vm(object):
             hooks.before_vm_start(self._buildDomainXML(), self.conf)
 
             fromSnapshot = self.conf.get('restoreFromSnapshot', False)
-            srcDomXML = self.conf.pop('_srcDomXML')
+            with self._confLock:
+                srcDomXML = self.conf.pop('_srcDomXML')
             if fromSnapshot:
                 srcDomXML = self._correctDiskVolumes(srcDomXML)
                 srcDomXML = self._correctGraphicsConfiguration(srcDomXML)
@@ -2143,6 +2154,16 @@ class Vm(object):
                 SetLinkAndNetworkError,
                 UpdatePortMirroringError) as e:
             return response.error('updateDevice', e.message)
+
+    @contextmanager
+    def migration_parameters(self, params):
+        with self._confLock:
+            self.conf['_migrationParams'] = params
+        try:
+            yield
+        finally:
+            with self._confLock:
+                del self.conf['_migrationParams']
 
     @contextmanager
     def setLinkAndNetwork(self, dev, conf, linkValue, networkValue, custom,
@@ -2809,8 +2830,9 @@ class Vm(object):
     def _completeIncomingMigration(self):
         if 'restoreState' in self.conf:
             self.cont()
-            del self.conf['restoreState']
-            fromSnapshot = self.conf.pop('restoreFromSnapshot', False)
+            with self._confLock:
+                del self.conf['restoreState']
+                fromSnapshot = self.conf.pop('restoreFromSnapshot', False)
             hooks.after_vm_dehibernate(self._dom.XMLDesc(0), self.conf,
                                        {'FROM_SNAPSHOT': fromSnapshot})
             self._syncGuestTime()
@@ -3851,11 +3873,13 @@ class Vm(object):
         Clean VM from the system
         """
         try:
-            del self.cif.vmContainer[self.conf['vmId']]
+            del self.cif.vmContainer[self.id]
+        except KeyError:
+            self.log.exception("Failed to delete VM %s", self.id)
+        else:
+            self._cleanupRecoveryFile()
             self.log.debug("Total desktops after destroy of %s is %d",
                            self.conf['vmId'], len(self.cif.vmContainer))
-        except Exception:
-            self.log.exception("Failed to delete VM %s", self.conf['vmId'])
 
     def destroy(self):
         self.log.debug('destroy Called')
@@ -4640,7 +4664,8 @@ class Vm(object):
         if not self._pathsPreparedEvent.isSet():
             self.log.debug('Timeout while waiting for path preparation')
             return False
-        srcDomXML = self.conf.pop('_srcDomXML').encode('utf-8')
+        with self._confLock:
+            srcDomXML = self.conf.pop('_srcDomXML').encode('utf-8')
         self._updateDevicesDomxmlCache(srcDomXML)
 
         for dev in self._customDevices():
@@ -4866,7 +4891,7 @@ class Vm(object):
         # the worst case, the allocated size of 'base' should be increased by
         # the allocated size of 'top' plus one additional chunk to accomodate
         # additional writes to 'top' during the live merge operation.
-        if drive.chunked:
+        if drive.chunked and baseInfo['format'] == 'COW':
             capacity, alloc, physical = self._getExtendInfo(drive)
             baseSize = int(baseInfo['apparentsize'])
             topSize = int(topInfo['apparentsize'])
