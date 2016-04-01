@@ -1,0 +1,33 @@
+Index: vdsm/vdsm/caps.py
+===================================================================
+--- vdsm.orig/vdsm/caps.py
++++ vdsm/vdsm/caps.py
+@@ -820,9 +820,9 @@ def _getKeyPackages():
+ 
+     elif getos() == OSName.DEBIAN and python_apt:
+         KEY_PACKAGES = {'qemu-kvm': 'qemu-kvm', 'qemu-img': 'qemu-utils',
+-                        'vdsm': 'vdsmd', 'spice-server': 'libspice-server1',
++                        'vdsm': 'vdsm', 'spice-server': 'libspice-server1',
+                         'libvirt': 'libvirt0', 'mom': 'mom',
+-                        'glusterfs-cli': 'glusterfs-cli'}
++                        'glusterfs-cli': 'glusterfs-client'}
+ 
+         if _glusterEnabled:
+             KEY_PACKAGES.update(GLUSTER_DEB_PACKAGES)
+Index: vdsm/vdsm/gluster/api.py
+===================================================================
+--- vdsm.orig/vdsm/gluster/api.py
++++ vdsm/vdsm/gluster/api.py
+@@ -74,9 +74,9 @@ GLUSTER_RPM_PACKAGES = (
+ 
+ GLUSTER_DEB_PACKAGES = (
+     ('glusterfs', 'glusterfs-client'),
+-    ('glusterfs-fuse', 'libglusterfs0'),
+-    ('glusterfs-geo-replication', 'libglusterfs0'),
+-    ('glusterfs-rdma', 'libglusterfs0'),
++    ('glusterfs-fuse', 'glusterfs-common'),
++    ('glusterfs-geo-replication', 'glusterfs-common'),
++    ('glusterfs-rdma', 'glusterfs-common'),
+     ('glusterfs-server', 'glusterfs-server'))
+ 
+ 

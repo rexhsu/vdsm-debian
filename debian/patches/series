@@ -4,3 +4,4 @@ remove-upstream-debian.patch
 paths.patch
 coredump.patch
 libvirt-config.patch
+fix-package-names.patch
