@@ -1,0 +1,14 @@
+Index: vdsm/vdsm/caps.py
+===================================================================
+--- vdsm.orig/vdsm/caps.py
++++ vdsm/vdsm/caps.py
+@@ -834,7 +834,8 @@ def _getKeyPackages():
+                 deb_pkg = KEY_PACKAGES[pkg]
+                 ver = cache[deb_pkg].installed.version
+                 # Debian just offers a version
+-                pkgs[pkg] = dict(version=ver, release="", buildtime="")
++                # ... but Engine requires also release with a dot
++                pkgs[pkg] = dict(version=ver, release="0.0", buildtime="")
+             except:
+                 logging.error('', exc_info=True)
+ 
