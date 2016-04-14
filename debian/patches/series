@@ -6,3 +6,4 @@ coredump.patch
 libvirt-config.patch
 fix-package-names.patch
 package-versions.patch
+fix-hookerror.patch
