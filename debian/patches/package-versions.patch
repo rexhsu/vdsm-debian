@@ -2,12 +2,16 @@ Index: vdsm/vdsm/caps.py
 ===================================================================
 --- vdsm.orig/vdsm/caps.py
 +++ vdsm/vdsm/caps.py
-@@ -834,7 +834,8 @@ def _getKeyPackages():
+@@ -834,7 +834,12 @@ def _getKeyPackages():
                  deb_pkg = KEY_PACKAGES[pkg]
                  ver = cache[deb_pkg].installed.version
                  # Debian just offers a version
 -                pkgs[pkg] = dict(version=ver, release="", buildtime="")
-+                # ... but Engine requires also release with a dot
++                # ... but Engine requires also release with a dot and doesn't
++                # like the dash
++                dash = ver.find('-')
++                if dash >= 0:
++                    ver = ver[:dash]
 +                pkgs[pkg] = dict(version=ver, release="0.0", buildtime="")
              except:
                  logging.error('', exc_info=True)
