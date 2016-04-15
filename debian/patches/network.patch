@@ -1,0 +1,35 @@
+Index: vdsm/lib/vdsm/netinfo.py
+===================================================================
+--- vdsm.orig/lib/vdsm/netinfo.py
++++ vdsm/lib/vdsm/netinfo.py
+@@ -49,7 +49,7 @@ from .netlink import route as nl_route
+ from .utils import memoized
+ 
+ 
+-NET_CONF_DIR = '/etc/sysconfig/network-scripts/'
++NET_CONF_DIR = '/etc/network/interfaces.d/'
+ # ifcfg persistence directories
+ NET_CONF_BACK_DIR = constants.P_VDSM_LIB + 'netconfback/'
+ 
+@@ -59,7 +59,7 @@ _DHCLIENT_LEASES_GLOBS = [
+     '/var/lib/NetworkManager/dhclient*-*.lease',
+ ]
+ 
+-NET_CONF_PREF = NET_CONF_DIR + 'ifcfg-'
++NET_CONF_PREF = NET_CONF_DIR
+ PROC_NET_VLAN = '/proc/net/vlan/'
+ NET_PATH = '/sys/class/net'
+ BONDING_MASTERS = '/sys/class/net/bonding_masters'
+Index: vdsm/vdsm/vdsm-store-net-config.in
+===================================================================
+--- vdsm.orig/vdsm/vdsm-store-net-config.in
++++ vdsm/vdsm/vdsm-store-net-config.in
+@@ -6,7 +6,7 @@
+ . @LIBEXECDIR@/ovirt_functions.sh
+ 
+ # ifcfg persistence directories
+-NET_CONF_DIR='/etc/sysconfig/network-scripts/'
++NET_CONF_DIR='/etc/network/interfaces.d/'
+ NET_CONF_BACK_DIR='@VDSMLIBDIR@/netconfback'
+ 
+ # Unified persistence directories
